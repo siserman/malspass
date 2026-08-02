@@ -1,5 +1,5 @@
 /* Malspaß service worker — cache-first so the app works fully offline */
-var CACHE = 'malspass-v4';
+var CACHE = 'malspass-v5';
 var ASSETS = [
   './',
   './index.html',
