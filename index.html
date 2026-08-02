@@ -170,17 +170,19 @@
   /* ============================================================
      COLORS & LANGUAGE
      ============================================================ */
+  // freq: C-major pentatonic, rainbow order (warm = low, cool = high) —
+  // any combination of simultaneous fingers stays consonant
   var COLORS = [
-    { key: 'red',    hex: '#e53935', de: 'Rot',     en: 'Red'    },
-    { key: 'orange', hex: '#fb8c00', de: 'Orange',  en: 'Orange' },
-    { key: 'yellow', hex: '#fdd835', de: 'Gelb',    en: 'Yellow' },
-    { key: 'green',  hex: '#43a047', de: 'Grün',    en: 'Green'  },
-    { key: 'blue',   hex: '#1e88e5', de: 'Blau',    en: 'Blue'   },
-    { key: 'purple', hex: '#8e24aa', de: 'Lila',    en: 'Purple' },
-    { key: 'pink',   hex: '#f48fb1', de: 'Rosa',    en: 'Pink'   },
-    { key: 'brown',  hex: '#795548', de: 'Braun',   en: 'Brown'  },
-    { key: 'black',  hex: '#212121', de: 'Schwarz', en: 'Black'  },
-    { key: 'white',  hex: '#ffffff', de: 'Weiß',    en: 'White'  }
+    { key: 'red',    hex: '#e53935', de: 'Rot',     en: 'Red',    freq: 261.63 }, // C4
+    { key: 'orange', hex: '#fb8c00', de: 'Orange',  en: 'Orange', freq: 293.66 }, // D4
+    { key: 'yellow', hex: '#fdd835', de: 'Gelb',    en: 'Yellow', freq: 329.63 }, // E4
+    { key: 'green',  hex: '#43a047', de: 'Grün',    en: 'Green',  freq: 392.00 }, // G4
+    { key: 'blue',   hex: '#1e88e5', de: 'Blau',    en: 'Blue',   freq: 440.00 }, // A4
+    { key: 'purple', hex: '#8e24aa', de: 'Lila',    en: 'Purple', freq: 523.25 }, // C5
+    { key: 'pink',   hex: '#f48fb1', de: 'Rosa',    en: 'Pink',   freq: 587.33 }, // D5
+    { key: 'brown',  hex: '#795548', de: 'Braun',   en: 'Brown',  freq: 196.00 }, // G3
+    { key: 'black',  hex: '#212121', de: 'Schwarz', en: 'Black',  freq: 130.81 }, // C3
+    { key: 'white',  hex: '#ffffff', de: 'Weiß',    en: 'White',  freq: 659.26 }  // E5
   ];
   var lang = 'de'; // 'de' | 'en'
   var currentColor = COLORS[4]; // start with blue
@@ -309,6 +311,107 @@
   document.addEventListener('pointerup', unlockAudio, true);
 
   /* ============================================================
+     PAINTING TONES — one soft-flute voice per finger (Web Audio),
+     routed through an <audio> element so iOS treats it as media
+     playback and it sounds even with the silent switch on
+     ============================================================ */
+  var AC = null, toneMaster = null, toneStreamAudio = null;
+  var tones = {}; // pointerId -> {osc, gain, lfo, lfoGain}
+  var VOICE_VOL = 0.14;
+
+  function initToneEngine() {
+    if (AC) return;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      AC = new Ctx();
+      toneMaster = AC.createGain();
+      toneMaster.gain.value = 0.9;
+      var comp = AC.createDynamicsCompressor(); // keeps 5-finger chords from clipping
+      comp.threshold.value = -18;
+      comp.ratio.value = 6;
+      toneMaster.connect(comp);
+      var routed = false;
+      try {
+        var dest = AC.createMediaStreamDestination();
+        comp.connect(dest);
+        toneStreamAudio = new Audio();
+        toneStreamAudio.setAttribute('playsinline', '');
+        toneStreamAudio.srcObject = dest.stream;
+        var p = toneStreamAudio.play();
+        if (p && p.catch) {
+          p.catch(function () {
+            try { comp.connect(AC.destination); } catch (err) {}
+          });
+        }
+        routed = true;
+      } catch (err) {}
+      if (!routed) { try { comp.connect(AC.destination); } catch (err) {} }
+    } catch (err) { AC = null; }
+  }
+
+  function startTone(pointerId) {
+    try {
+      initToneEngine();
+      if (!AC) return;
+      if (AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
+      stopTone(pointerId);
+      var f = currentColor.freq;
+      var now = AC.currentTime;
+      var osc = AC.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      var g = AC.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(VOICE_VOL, now + 0.08); // soft attack, no click
+      // gentle 5 Hz vibrato = flute-like life
+      var lfo = AC.createOscillator();
+      lfo.frequency.value = 5;
+      var lfoGain = AC.createGain();
+      lfoGain.gain.value = f * 0.007;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      osc.connect(g);
+      g.connect(toneMaster);
+      osc.start(now);
+      lfo.start(now);
+      tones[pointerId] = { osc: osc, gain: g, lfo: lfo, lfoGain: lfoGain };
+    } catch (err) {}
+  }
+
+  function stopTone(pointerId) {
+    var t = tones[pointerId];
+    if (!t) return;
+    delete tones[pointerId];
+    try {
+      var now = AC.currentTime;
+      t.gain.gain.cancelScheduledValues(now);
+      t.gain.gain.setValueAtTime(t.gain.gain.value, now);
+      t.gain.gain.linearRampToValueAtTime(0.0001, now + 0.15); // soft release
+      t.osc.stop(now + 0.2);
+      t.lfo.stop(now + 0.2);
+    } catch (err) {
+      try { t.osc.stop(); t.lfo.stop(); } catch (e2) {}
+    }
+  }
+
+  function stopAllTones() {
+    Object.keys(tones).forEach(function (id) { stopTone(id); });
+  }
+  // tiny introspection hook (used by automated tests, harmless in production)
+  window.__malDebug = function () {
+    return {
+      ac: !!AC,
+      state: AC ? AC.state : 'none',
+      voices: Object.keys(tones).map(function (id) { return tones[id].osc.frequency.value; })
+    };
+  };
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') stopAllTones();
+    else if (AC && AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
+  });
+
+  /* ============================================================
      CANVAS
      ============================================================ */
   var canvas = document.getElementById('paper');
@@ -374,6 +477,7 @@
     var p = canvasPos(e);
     strokes[e.pointerId] = p;
     drawDot(p);
+    startTone(e.pointerId);
   });
 
   canvas.addEventListener('pointermove', function (e) {
@@ -390,7 +494,7 @@
     strokes[e.pointerId] = last;
   });
 
-  function endStroke(e) { delete strokes[e.pointerId]; }
+  function endStroke(e) { delete strokes[e.pointerId]; stopTone(e.pointerId); }
   canvas.addEventListener('pointerup', endStroke);
   canvas.addEventListener('pointercancel', endStroke);
 
