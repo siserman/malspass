@@ -1,12 +1,36 @@
 /* Malspaß service worker — cache-first so the app works fully offline */
-var CACHE = 'malspass-v1';
+var CACHE = 'malspass-v2';
 var ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './audio/de-black.mp3',
+  './audio/de-blue.mp3',
+  './audio/de-brown.mp3',
+  './audio/de-clean.mp3',
+  './audio/de-green.mp3',
+  './audio/de-lang.mp3',
+  './audio/de-orange.mp3',
+  './audio/de-pink.mp3',
+  './audio/de-purple.mp3',
+  './audio/de-red.mp3',
+  './audio/de-white.mp3',
+  './audio/de-yellow.mp3',
+  './audio/en-black.mp3',
+  './audio/en-blue.mp3',
+  './audio/en-brown.mp3',
+  './audio/en-clean.mp3',
+  './audio/en-green.mp3',
+  './audio/en-lang.mp3',
+  './audio/en-orange.mp3',
+  './audio/en-pink.mp3',
+  './audio/en-purple.mp3',
+  './audio/en-red.mp3',
+  './audio/en-white.mp3',
+  './audio/en-yellow.mp3'
 ];
 
 self.addEventListener('install', function (e) {

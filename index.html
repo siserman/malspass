@@ -212,7 +212,8 @@
   function speak(text, langCode) {
     try {
       if (!window.speechSynthesis) return;
-      speechSynthesis.cancel(); // interrupt previous word — fast repeated taps stay responsive
+      if (speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (err) {} }
+      if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = langCode === 'de' ? 'de-DE' : 'en-US';
       u.rate = 0.85;
@@ -221,9 +222,91 @@
         var v = pickVoice(langCode);
         if (v) u.voice = v;
       } catch (err) {}
-      speechSynthesis.speak(u);
+      setTimeout(function () { try { speechSynthesis.speak(u); } catch (err) {} }, 60);
     } catch (err) {}
   }
+
+  /* ============================================================
+     AUDIO FILES — primary sound path (reliable on iOS, plays
+     even with the silent switch on); speech synthesis = fallback
+     ============================================================ */
+  var PHRASES = {
+    clean: { de: 'Alles sauber!', en: 'All clean!' },
+    lang:  { de: 'Deutsch',       en: 'English'    }
+  };
+  var audioCache = {};
+  var audioUnlocked = false;
+  var pendingSay = null;
+
+  function getAudio(langCode, key) {
+    var id = langCode + '-' + key;
+    if (!audioCache[id]) {
+      var a = new Audio('audio/' + id + '.mp3');
+      a.preload = 'auto';
+      audioCache[id] = a;
+    }
+    return audioCache[id];
+  }
+
+  // preload everything up front (24 small files, cached by the service worker)
+  ['de', 'en'].forEach(function (l) {
+    COLORS.forEach(function (c) { getAudio(l, c.key); });
+    Object.keys(PHRASES).forEach(function (k) { getAudio(l, k); });
+  });
+
+  function fallbackText(key) {
+    if (PHRASES[key]) return PHRASES[key][lang];
+    for (var i = 0; i < COLORS.length; i++) {
+      if (COLORS[i].key === key) return lang === 'de' ? COLORS[i].de : COLORS[i].en;
+    }
+    return '';
+  }
+
+  function say(key) {
+    try {
+      // stop whatever is currently playing so fast taps stay snappy
+      Object.keys(audioCache).forEach(function (id) {
+        var o = audioCache[id];
+        if (!o.paused) { try { o.pause(); o.currentTime = 0; } catch (err) {} }
+      });
+      var a = getAudio(lang, key);
+      a.currentTime = 0;
+      var p = a.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          pendingSay = key;             // will retry right after unlock
+          speak(fallbackText(key), lang); // and try speech in the meantime
+        });
+      }
+    } catch (err) {
+      speak(fallbackText(key), lang);
+    }
+  }
+
+  // iOS unlocks media playback on the first real touch — prime every clip once
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    Object.keys(audioCache).forEach(function (id) {
+      var a = audioCache[id];
+      try {
+        a.muted = true;
+        var p = a.play();
+        if (p && p.then) {
+          p.then(function () { a.pause(); a.currentTime = 0; a.muted = false; })
+           .catch(function () { a.muted = false; });
+        } else {
+          a.pause(); a.currentTime = 0; a.muted = false;
+        }
+      } catch (err) { try { a.muted = false; } catch (e2) {} }
+    });
+    if (pendingSay) {
+      var k = pendingSay; pendingSay = null;
+      setTimeout(function () { say(k); }, 150);
+    }
+  }
+  document.addEventListener('touchend', unlockAudio, true);
+  document.addEventListener('pointerup', unlockAudio, true);
 
   /* ============================================================
      CANVAS
@@ -336,7 +419,7 @@
     for (var i = 0; i < swatches.length; i++) {
       swatches[i].classList.toggle('selected', swatches[i].dataset.key === c.key);
     }
-    speak(lang === 'de' ? c.de : c.en, lang);
+    say(c.key);
   }
   // initial selection (no speech on load)
   (function () {
@@ -355,7 +438,7 @@
     e.stopPropagation();
     lang = (lang === 'de') ? 'en' : 'de';
     langBtn.textContent = lang.toUpperCase();
-    speak(lang === 'de' ? 'Deutsch' : 'English', lang);
+    say('lang');
   });
 
   /* ============================================================
@@ -414,7 +497,7 @@
     void flash.offsetWidth; // reflow
     flash.style.transition = 'opacity 0.5s ease';
     flash.style.opacity = '0';
-    speak(lang === 'de' ? 'Alles sauber!' : 'All clean!', lang);
+    say('clean');
   }
 })();
 </script>
