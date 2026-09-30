@@ -53,6 +53,9 @@
     set: function (key, value) {
       try { window.localStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch (err) {}
     },
+    remove: function (key) {
+      try { window.localStorage.removeItem(PREFIX + key); } catch (err) {}
+    },
     clearAll: function () {
       try {
         var keys = [];
@@ -208,6 +211,21 @@
   Mal.saveSettings = function () {
     Mal.store.set('settings', Mal.settings);
     Mal.emit('settings', Mal.settings);
+  };
+
+  /* ============================================================
+     TEST MODE — jump to any chapter, day or scene, fast clock.
+     Lives in the parents' area. Set DEV to false for store builds.
+     ============================================================ */
+  Mal.DEV = true;
+  Mal.debug = (function () {
+    var d = Mal.store.get('debug', {}) || {};
+    return { on: !!d.on, hud: !!d.hud, fastGate: !!d.fastGate, speed: d.speed || 1 };
+  })();
+  Mal.debugOn = function () { return Mal.DEV && Mal.debug.on; };
+  Mal.saveDebug = function () {
+    Mal.store.set('debug', Mal.debug);
+    Mal.emit('debug', Mal.debug);
   };
 
   /* ============================================================

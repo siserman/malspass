@@ -18,6 +18,7 @@
   var target = [], entered = [], onPass = null;
 
   PA.gate = function (cb) {
+    if (Mal.debugOn() && Mal.debug.fastGate) { cb(); return; } // test mode shortcut
     onPass = cb;
     newQuestion();
     openOverlay('gate');
@@ -72,12 +73,16 @@
      ============================================================ */
   var sheet = $('parentSheet');
 
+  var statusTimer = null;
   PA.open = function () {
     render();
     openOverlay('parent');
     sheet.scrollTop = 0;
+    clearInterval(statusTimer);
+    statusTimer = setInterval(updateStatus, 1000);
   };
   PA.close = function () {
+    clearInterval(statusTimer);
     closeOverlay('parent');
     Mal.emit('parentClosed');
   };
@@ -116,6 +121,7 @@
     var keepScroll = sheet.scrollTop;
     sheet.innerHTML = '';
 
+    statusEl = null;
     var head = el('header', '');
     head.appendChild(el('h1', '', Mal.esc(Mal.t('parentTitle'))));
     var close = el('button', 'round', Mal.icon('close'));
@@ -123,6 +129,9 @@
     Mal.tap(close, PA.close);
     head.appendChild(close);
     sheet.appendChild(head);
+
+    // test mode on → its tools come first; off → only a switch at the very end
+    if (Mal.DEV && Mal.debug.on) renderDebug(S);
 
     /* ---------- today ---------- */
     var today = section(Mal.t('secToday'));
@@ -238,6 +247,8 @@
     why.classList.add('why');
     Mal.t('why').forEach(function (p) { why.appendChild(el('p', '', Mal.esc(p))); });
 
+    if (Mal.DEV && !Mal.debug.on) renderDebug(S);
+
     /* ---------- reset ---------- */
     var rs = section(Mal.t('secReset'));
     var rb = el('button', 'btn danger hold', Mal.RING + Mal.esc(Mal.t('resetHold')));
@@ -250,9 +261,121 @@
     rs.appendChild(rb);
     rs.appendChild(el('p', 'note', Mal.esc(Mal.t('resetNote'))));
 
-    sheet.scrollTop = keepScroll;
+    sheet.scrollTop = toTop ? 0 : keepScroll; // switching test mode on jumps to its tools
+    toTop = false;
   }
 
+  /* ============================================================
+     TEST MODE (only when Mal.DEV) — every chapter, day and scene
+     without waiting, a faster clock, and every voice line to listen to
+     ============================================================ */
+  var statusEl = null, voicesOpen = false, toTop = false;
+
+  function mmss(ms) {
+    if (!isFinite(ms)) return '∞';
+    var s = Math.max(0, Math.round(ms / 1000));
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+  function updateStatus() {
+    if (!statusEl) return;
+    var st = T.status();
+    statusEl.textContent = Mal.t('dbgStatus', {
+      sess: mmss(st.sess), len: mmss(st.sessLen), used: mmss(st.used), daily: mmss(st.daily), day: Mal.story.day(),
+      state: st.sleeping ? Mal.t('dbgAsleep', { time: Mal.clock(st.until) }) : Mal.t('dbgAwake')
+    });
+  }
+  // buttons that run an action and redraw; scenes close the sheet first
+  function actions(parent, label, list) {
+    var row = el('div', 'row');
+    if (label) row.appendChild(el('div', 'lbl', Mal.esc(label)));
+    var box = el('div', 'chips');
+    list.forEach(function (a) {
+      var b = el('button', 'chip' + (a.on ? ' on' : '') + (a.hold ? ' hold' : ''), (a.hold ? Mal.RING : '') + (a.html || Mal.esc(a.l)));
+      if (a.hold) Mal.hold(b, a.hold, function () { a.fn(); render(); });
+      else {
+        Mal.tap(b, function () {
+          if (a.scene) { PA.close(); setTimeout(a.fn, 60); }
+          else { a.fn(); render(); }
+        });
+      }
+      box.appendChild(b);
+    });
+    row.appendChild(box);
+    parent.appendChild(row);
+  }
+
+  function renderDebug(S) {
+    var D = Mal.debug, dbg = Mal.app.debug, story = Mal.story;
+    var sec = section(Mal.t('dbgTitle'));
+    sec.classList.add('dbg');
+    chips(sec, null, onOff(), D.on, function (v) { D.on = v; toTop = v; Mal.saveDebug(); });
+    if (!D.on) { sec.appendChild(el('p', 'note', Mal.esc(Mal.t('dbgNote')))); return; }
+
+    statusEl = el('p', 'dbg-status', '');
+    sec.appendChild(statusEl);
+    updateStatus();
+
+    // days pass → chapters open exactly like in real life
+    actions(sec, Mal.t('dbgDays', { n: story.day() }), [
+      { l: Mal.t('dbgDayMinus'), fn: function () { story.shiftDays(-1); } },
+      { l: Mal.t('dbgDayPlus'), fn: function () { story.shiftDays(1); } },
+      { l: Mal.t('dbgDayZero'), fn: function () { story.shiftDays(-story.day()); } },
+      { l: Mal.t('dbgRelock'), fn: story.relock },
+      { l: Mal.t('dbgResetIntros'), fn: story.resetIntros }
+    ]);
+    actions(sec, Mal.t('dbgOpenChapter'), Mal.CHAPTERS.map(function (ch) {
+      return { html: '<span class="ico">' + Mal.icon(ch.id) + '</span>' + Mal.esc(Mal.t('chapter_' + ch.id)),
+               scene: true, fn: function () { dbg.chapter(ch.id); } };
+    }));
+
+    var weekday = new Date().getDay(), rest = (S.restDays || []).indexOf(weekday) >= 0;
+    actions(sec, Mal.t('dbgScenes'), [
+      { l: Mal.t('dbgFirstRun'), scene: true, fn: dbg.firstRun },
+      { l: Mal.t('dbgHello'), scene: true, fn: dbg.hello },
+      { l: Mal.t('dbgAnnounce'), scene: true, fn: dbg.announce },
+      { l: Mal.t('dbgWarn'), scene: true, fn: T.warnNow },
+      { l: Mal.t('dbgGoodnight'), scene: true, fn: function () { T.debugSleep('session'); } },
+      { l: Mal.t('dbgBedtime'), scene: true, fn: function () { T.debugSleep('bedtime'); } },
+      { l: Mal.t('dbgDaily'), scene: true, fn: function () { T.debugSleep('daily'); } },
+      { l: Mal.t('dbgRestToday'), on: rest, scene: true, fn: function () {
+        var list = (S.restDays || []).slice(), i = list.indexOf(weekday);
+        if (i >= 0) list.splice(i, 1); else list.push(weekday);
+        setS('restDays', list);
+      } },
+      { l: Mal.t('dbgWake'), scene: true, fn: dbg.wake }
+    ]);
+
+    chips(sec, Mal.t('dbgSpeed'), [1, 10, 60].map(function (n) { return { v: n, l: '×' + n }; }), D.speed,
+          function (v) { D.speed = v; Mal.saveDebug(); });
+    chips(sec, Mal.t('dbgHud'), onOff(), D.hud, function (v) { D.hud = v; Mal.saveDebug(); });
+    chips(sec, Mal.t('dbgFastGate'), onOff(), D.fastGate, function (v) { D.fastGate = v; Mal.saveDebug(); });
+    actions(sec, null, [
+      { l: Mal.t('dbgResetToday'), fn: function () { T.resetToday(false); } },
+      { l: Mal.t('dbgEmptyFridge'), hold: 1200, fn: function () { Mal.gallery.clearAll(); } }
+    ]);
+
+    // every line Klecks can say — tap to hear it, see which ones are real recordings
+    var vb = el('button', 'btn secondary', Mal.esc(Mal.t('dbgVoices')) + (voicesOpen ? ' ▾' : ' ▸'));
+    Mal.tap(vb, function () { voicesOpen = !voicesOpen; render(); });
+    sec.appendChild(vb);
+    if (voicesOpen) {
+      var keys = A.keys();
+      var playAll = el('button', 'btn small', Mal.esc(Mal.t('dbgPlayAll')));
+      Mal.tap(playAll, function () { A.sayQueue(keys); });
+      sec.appendChild(playAll);
+      var list = el('div', 'dbg-voices');
+      keys.forEach(function (k) {
+        var rec = A.hasClip(Mal.lang, k);
+        var row = el('button', 'dbg-line', '<span class="play">▶</span><span class="k">' + Mal.esc(k) + '</span>' +
+          '<span class="tx">' + Mal.esc(A.text(k)) + '</span><span class="tag' + (rec ? ' rec' : '') + '">' +
+          Mal.esc(Mal.t(rec ? 'dbgClip' : 'dbgTts')) + '</span>');
+        Mal.tap(row, function () { A.say(k); });
+        list.appendChild(row);
+      });
+      sec.appendChild(list);
+    }
+    sec.appendChild(el('p', 'note', Mal.esc(Mal.t('dbgNote'))));
+  }
   function applyAge(age) {
     var p = Mal.AGE_PRESETS[age];
     Mal.settings.age = age;
@@ -301,7 +424,6 @@
       box.appendChild(go);
       box.appendChild(el('p', 'note', Mal.esc(Mal.t('firstHint'))));
     }
-    applyAge(Mal.settings.age);
     draw();
     openOverlay('firstrun');
   };

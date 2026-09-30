@@ -35,6 +35,17 @@
     Mal.emit('story');
   };
   story.unlockAll = function () { Mal.store.set('allOpen', true); Mal.emit('story'); };
+  // test mode: travel through the days, lock chapters again, replay first-time intros
+  story.day = function () { return Mal.daysBetween(installDay(), Mal.dayKey()); };
+  story.shiftDays = function (n) {
+    var target = Math.max(0, story.day() + n);
+    var d = new Date();
+    d.setDate(d.getDate() - target);
+    Mal.store.set('installDay', Mal.dayKey(d.getTime()));
+    Mal.emit('story');
+  };
+  story.relock = function () { Mal.store.remove('allOpen'); Mal.store.remove('unlocked'); Mal.emit('story'); };
+  story.resetIntros = function () { Mal.store.remove('seen'); Mal.store.remove('announced'); Mal.emit('story'); };
   // small persistent per-chapter flags: 'seen' (intro played), 'announced' (new-chapter hint given)
   function flag(name, id, set) {
     var f = Mal.store.get(name, {});
@@ -486,6 +497,59 @@
       A.say('awake');
     }, 1900);
   });
+
+  /* ============================================================
+     TEST MODE — scenes the parents' area can jump to
+     ============================================================ */
+  Mal.app.debug = {
+    firstRun: function () {
+      show('home');
+      Mal.parent.firstRun(function () {
+        renderHome();
+        runIntro('hello', '', '#1e88e5', false, function () { kHome.wave(); });
+      });
+    },
+    hello: function () {
+      show('home');
+      runIntro('hello', '', '#1e88e5', false, function () { kHome.wave(); });
+    },
+    announce: function () {
+      show('home');
+      renderHome();
+      kHome.bounce();
+      A.chime();
+      A.say('newThing');
+    },
+    // open any chapter, even a locked one (wakes Klecks quietly first)
+    chapter: function (id) {
+      if (T.isSleeping) T.resetToday(true);
+      [kHome, kPaint, kSleep].forEach(function (k) { k.setSleepy(false); k.setSleeping(false); });
+      startChapter(Mal.chapter(id));
+    },
+    wake: function () {
+      if (current === 'sleep') T.grant(10);
+      else { T.resetToday(true); show('home'); renderHome(); kHome.wave(); }
+    }
+  };
+
+  // small timer read-out on the kids' screens (test mode only)
+  var hud = $('debugHud');
+  function mmss(ms) {
+    if (!isFinite(ms)) return '∞';
+    var s = Math.max(0, Math.round(ms / 1000));
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+  function updateHud() {
+    var on = Mal.debugOn() && Mal.debug.hud;
+    hud.style.display = on ? '' : 'none';
+    if (!on) return;
+    var st = T.status();
+    hud.textContent = (st.sleeping ? 'zzz ' + Mal.clock(st.until) : mmss(st.sess) + ' / ' + mmss(st.sessLen)) +
+      ' · ' + mmss(st.used) + ' / ' + mmss(st.daily) + ' · ' + (Mal.lang === 'de' ? 'Tag ' : 'day ') + story.day() +
+      (st.speed > 1 ? ' · ×' + st.speed : '');
+  }
+  Mal.on('clock', updateHud);
+  Mal.on('debug', updateHud);
 
   /* ============================================================
      BOOT

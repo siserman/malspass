@@ -602,6 +602,36 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 .first-card .langs { margin-top: 14px; }
 .first-card .go { display: flex; width: 100%; margin-top: 20px; padding: 16px; font-size: 18px; background: var(--green); }
 
+/* ---------- test mode ---------- */
+.sec.dbg { border: 2px dashed #b0bec5; background: #fbfcfd; }
+.dbg-status {
+  margin: 4px 0 8px; padding: 8px 10px; border-radius: 10px;
+  background: #eef3f6; font-size: 13.5px; font-variant-numeric: tabular-nums;
+}
+.chip .ico { display: inline-block; width: 20px; height: 20px; margin-right: 6px; vertical-align: -5px; }
+.chip .ico svg { width: 100%; height: 100%; }
+.chip.hold { position: relative; }
+.dbg-voices { margin-top: 8px; border-top: 1px solid var(--line); }
+.dbg-line {
+  display: flex; align-items: baseline; gap: 10px; width: 100%;
+  padding: 9px 2px; border-bottom: 1px solid var(--line);
+  text-align: left; font-size: 14px;
+}
+.dbg-line .play { color: var(--green); flex: 0 0 auto; }
+.dbg-line .k { flex: 0 0 96px; color: var(--ink-soft); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.dbg-line .tx { flex: 1; }
+.dbg-line .tag { flex: 0 0 auto; font-size: 11px; padding: 2px 7px; border-radius: 999px; background: #fdecea; color: #c62828; }
+.dbg-line .tag.rec { background: #e8f5e9; color: #2e7d32; }
+.debug-hud {
+  position: fixed;
+  top: calc(var(--btn) + 18px + var(--safe-t)); left: calc(10px + var(--safe-l));
+  z-index: 80;
+  padding: 3px 10px; border-radius: 999px;
+  background: rgba(20, 20, 30, 0.72); color: #fff;
+  font-size: 12px; font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
 /* ---------- flying picture ---------- */
 .fly {
   position: fixed; left: 0; top: 0;

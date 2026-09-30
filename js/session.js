@@ -86,10 +86,10 @@
   T.usedToday = function () { dayRoll(Date.now()); return st.used; };
   T.history = function () { return st.hist; };
 
-  function endSession(now) {
-    var reason = 'session';
-    if (msToBedtime(now) <= 0) reason = 'bedtime';
-    else if (dailyMs() - st.used <= 0 || isRestDay(now)) reason = 'daily';
+  function endSession(now, forced) {
+    var reason = forced || 'session';
+    if (!forced && msToBedtime(now) <= 0) reason = 'bedtime';
+    else if (!forced && (dailyMs() - st.used <= 0 || isRestDay(now))) reason = 'daily';
     st.sleepUntil = reason === 'session' ? now + S.breakMin * 60000 : nextWake(now);
     st.reason = reason;
     st.sess = 0;
@@ -101,6 +101,9 @@
   }
 
   /* ---------- the clock ---------- */
+  // test mode: the painting clock can run 10× or 60× faster
+  function speed() { return Mal.debugOn() && Mal.debug.speed > 1 ? Mal.debug.speed : 1; }
+
   // a long gap is a natural break: the next session starts fresh
   function breakCheck(now) {
     if (st.last && now - st.last >= S.breakMin * 60000 && st.sess > 0) { st.sess = 0; st.sessLen = 0; st.warned = false; }
@@ -115,7 +118,7 @@
       if (!T.asleep(now)) { T.isSleeping = false; st.sess = 0; st.warned = false; save(true); Mal.emit('wake', {}); }
     } else if (kidActive && document.visibilityState === 'visible') {
       if (now - lastInput < IDLE_MS) {
-        var add = st.last ? Mal.clamp(now - st.last, 0, 2000) : 1000;
+        var add = (st.last ? Mal.clamp(now - st.last, 0, 2000) : 1000) * speed();
         st.sess += add;
         st.used += add;
         st.hist[st.day] = (st.hist[st.day] || 0) + add;
@@ -177,6 +180,31 @@
     st.last = now;
     save(true);
     if (T.isSleeping) { T.isSleeping = false; Mal.emit('wake', { granted: true }); }
+  };
+  /* ---------- test mode helpers ---------- */
+  T.status = function () {
+    var now = Date.now();
+    dayRoll(now);
+    return { sess: st.sess, sessLen: sessionMs(), used: st.used, daily: dailyMs(), sleeping: T.isSleeping,
+             reason: st.reason, until: T.wakeInfo(now).until, speed: speed() };
+  };
+  // Klecks goes to sleep right now for a given reason: 'session' | 'daily' | 'bedtime'
+  T.debugSleep = function (reason) { endSession(Date.now(), reason); };
+  T.warnNow = function () {
+    if (T.isSleeping) return;
+    st.warned = true;
+    save(true);
+    Mal.emit('sessionWarn');
+  };
+  // today's time back to zero; wakes Klecks without the wake-up scene when `silent`
+  T.resetToday = function (silent) {
+    st.used = 0; st.sess = 0; st.sessLen = 0; st.sleepUntil = 0; st.warned = false;
+    st.bonus = 0; st.bedOverride = 0; st.hist[st.day] = 0; st.last = Date.now();
+    save(true);
+    if (T.isSleeping) {
+      T.isSleeping = false;
+      if (!silent) Mal.emit('wake', {});
+    }
   };
   T.reset = function () {
     st = { day: Mal.dayKey(), used: 0, sess: 0, last: 0, sleepUntil: 0, reason: '', bonusDay: '', bonus: 0, bedOverride: 0, warned: false, hist: {}, sessLen: 0 };

@@ -16,7 +16,14 @@ python3 -m http.server 8000
 It also runs straight from `index.html` (service worker and offline cache only work over http/https).
 
 - **Parents' area:** press and hold the lock (top right) for 2 seconds, then tap the three numbers shown as words.
-- **See the goodnight flow quickly:** in the parents' area choose *Eine Malzeit dauert → 1 Min (Test)*.
+- **Test mode:** at the bottom of the parents' area, switch *Testmodus* on. It lets you:
+  - jump through the days, so chapters open like in real life;
+  - lock chapters again, or open any chapter right away;
+  - play every scene: first start, hello, "something new", sleepy, goodnight, bedtime, daily limit, rest day, wake up;
+  - run the clock ×10 or ×60, and show a timer on screen;
+  - listen to every voice line.
+
+  Switch it off for real use. Store builds drop it via `Mal.DEV` in `js/core.js`.
 
 ## What's inside
 
@@ -29,6 +36,10 @@ It also runs straight from `index.html` (service worker and offline cache only w
 
 Plain ES5 in separate files under `js/` that share one `window.Mal` namespace. This keeps old hand‑me‑down iPads working and needs no build step:
 
-`core` → `texts` → `audio` → `mascot` → `brushes` → `paint` → `session` → `gallery` → `parent` → `app`
+`core` → `lines` → `texts` → `audio` → `mascot` → `brushes` → `paint` → `session` → `gallery` → `parent` → `app`
 
-All texts are in `js/texts.js`. The offline file list is in `sw.js` (bump `CACHE` when files change).
+What Klecks says is in `js/lines.js`, the grown‑up texts are in `js/texts.js`, and the offline file list is in `sw.js` (bump `CACHE` when files change).
+
+## Voice
+
+[`tools/make_voices.py`](tools/make_voices.py) records all of Klecks's lines with your ElevenLabs voice. It runs on your own computer, so the API key never leaves it, and it updates `audio/clips.js` and `sw.js` for you. Details and the full script of lines: [docs/VOICE_SCRIPT.md](docs/VOICE_SCRIPT.md).

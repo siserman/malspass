@@ -317,7 +317,7 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 
 ## 15. The prototype on this branch
 
-**Try it:** serve the folder (e.g. `python3 -m http.server`) or publish it with GitHub Pages, open it on the iPad and "Add to Home Screen". For a quick look at the goodnight flow: lock at the top right → hold 2 s → answer the gate → *Eine Malzeit dauert* → **1 Min (Test)**.
+**Try it:** serve the folder (e.g. `python3 -m http.server`) or publish it with GitHub Pages, open it on the iPad and "Add to Home Screen". To see everything without waiting days, switch on the **Testmodus** at the bottom of the parents' area (lock at the top right → hold 2 s → answer the gate). It has day travel, every chapter and scene, a ×10/×60 clock and every voice line.
 
 **What's in it:**
 - the first start for parents;
@@ -331,7 +331,7 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 - DE/EN everywhere.
 
 **Known limits:**
-- New lines use the device voice until they're recorded (see [`VOICE_SCRIPT.md`](VOICE_SCRIPT.md)).
+- New lines use the device voice until they're recorded. `tools/make_voices.py` records them with your ElevenLabs voice (see [`VOICE_SCRIPT.md`](VOICE_SCRIPT.md)).
 - There is no purchase flow.
 - In a browser tab, iOS may clear website storage — add it to the Home Screen.
 

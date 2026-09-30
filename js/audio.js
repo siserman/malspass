@@ -10,18 +10,15 @@
   var A = Mal.audio = {};
 
   /* ---------- which clips exist in audio/<lang>-<key>.mp3 ----------
-     Add a key here (and to sw.js) once a new line has been recorded. */
-  var RECORDED = {
-    de: ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'black', 'white', 'clean', 'lang'],
-    en: ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'black', 'white', 'clean', 'lang']
-  };
-  function hasClip(langCode, key) { return RECORDED[langCode].indexOf(key) >= 0; }
+     audio/clips.js lists them; tools/make_voices.py rewrites it. */
+  var RECORDED = window.MAL_CLIPS || { de: [], en: [] };
+  function hasClip(langCode, key) { return (RECORDED[langCode] || []).indexOf(key) >= 0; }
 
   function textFor(key) {
-    var c = Mal.color(key);
-    if (c) return Mal.lang === 'de' ? c.de : c.en;
     var l = Mal.LINES[key];
-    return l ? l[Mal.lang] : '';
+    if (l) return l[Mal.lang];
+    var c = Mal.color(key);
+    return c ? (Mal.lang === 'de' ? c.de : c.en) : '';
   }
 
   /* ============================================================
@@ -164,6 +161,10 @@
   };
   A.stopTalk = stopCurrent;
   A.isTalking = function () { return !!current; };
+  // everything Klecks can say (test mode lists these)
+  A.keys = function () { return Object.keys(Mal.LINES); };
+  A.text = textFor;
+  A.hasClip = hasClip;
 
   // iOS unlocks media playback on the first real touch — prime every clip once
   function unlockAudio() {
