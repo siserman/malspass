@@ -1,0 +1,308 @@
+/* ============================================================
+   Malspaß — for grown-ups
+   Parental gate (numbers spelled out as words — a pre-reader
+   can't pass it), the settings sheet and the first-run welcome.
+   ============================================================ */
+(function () {
+  'use strict';
+  var Mal = window.Mal, A = Mal.audio, T = Mal.session;
+  var $ = Mal.$;
+  var PA = Mal.parent = {};
+
+  function openOverlay(id) { $(id).classList.add('open'); Mal.emit('overlay'); }
+  function closeOverlay(id) { $(id).classList.remove('open'); Mal.emit('overlay'); }
+
+  /* ============================================================
+     GATE
+     ============================================================ */
+  var target = [], entered = [], onPass = null;
+
+  PA.gate = function (cb) {
+    onPass = cb;
+    newQuestion();
+    openOverlay('gate');
+  };
+  function newQuestion() {
+    target = [];
+    while (target.length < 3) {
+      var n = 1 + Math.floor(Math.random() * 9);
+      if (target.indexOf(n) < 0) target.push(n);
+    }
+    entered = [];
+    var words = Mal.t('numbers');
+    $('gateTitle').textContent = Mal.t('gateTitle');
+    $('gateAsk').textContent = Mal.t('gateAsk');
+    $('gateWords').textContent = target.map(function (n) { return words[n]; }).join(' – ');
+    renderSlots();
+  }
+  function renderSlots() {
+    var html = '';
+    for (var i = 0; i < 3; i++) html += '<span>' + (entered[i] !== undefined ? entered[i] : '') + '</span>';
+    $('gateSlots').innerHTML = html;
+  }
+  (function buildKeypad() {
+    var pad = $('keypad');
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, null].forEach(function (n) {
+      var b = document.createElement('button');
+      if (n === null) { b.className = 'blank'; b.disabled = true; pad.appendChild(b); return; }
+      b.textContent = String(n);
+      Mal.tap(b, function () {
+        if (entered.length >= 3) return;
+        entered.push(n);
+        renderSlots();
+        if (entered.length < 3) return;
+        if (entered.join() === target.join()) {
+          setTimeout(function () { closeOverlay('gate'); if (onPass) onPass(); }, 150);
+        } else {
+          var card = $('gateCard');
+          card.classList.remove('shake');
+          void card.offsetWidth;
+          card.classList.add('shake');
+          setTimeout(newQuestion, 500);
+        }
+      });
+      pad.appendChild(b);
+    });
+  })();
+  $('gateClose').innerHTML = Mal.icon('close');
+  Mal.tap($('gateClose'), function () { closeOverlay('gate'); });
+
+  /* ============================================================
+     SETTINGS SHEET
+     ============================================================ */
+  var sheet = $('parentSheet');
+
+  PA.open = function () {
+    render();
+    openOverlay('parent');
+    sheet.scrollTop = 0;
+  };
+  PA.close = function () {
+    closeOverlay('parent');
+    Mal.emit('parentClosed');
+  };
+
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+  function section(title) {
+    var s = el('section', 'sec');
+    s.appendChild(el('h2', '', Mal.esc(title)));
+    sheet.appendChild(s);
+    return s;
+  }
+  function chips(parent, label, options, current, onPick) {
+    var row = el('div', 'row');
+    if (label) row.appendChild(el('div', 'lbl', Mal.esc(label)));
+    var box = el('div', 'chips');
+    options.forEach(function (o) {
+      var b = el('button', 'chip' + (o.v === current ? ' on' : ''), Mal.esc(o.l));
+      Mal.tap(b, function () { onPick(o.v); render(); });
+      box.appendChild(b);
+    });
+    row.appendChild(box);
+    parent.appendChild(row);
+    return row;
+  }
+  function minutes(n) { return n >= 60 && n % 60 === 0 ? Mal.t('hours', { n: n / 60 }) : Mal.t('min', { n: n }); }
+  function setS(key, v) { Mal.settings[key] = v; Mal.saveSettings(); }
+  function onOff(v) { return [{ v: true, l: Mal.t('on') }, { v: false, l: Mal.t('off') }]; }
+
+  function render() {
+    var S = Mal.settings;
+    var keepScroll = sheet.scrollTop;
+    sheet.innerHTML = '';
+
+    var head = el('header', '');
+    head.appendChild(el('h1', '', Mal.esc(Mal.t('parentTitle'))));
+    var close = el('button', 'round', Mal.icon('close'));
+    close.setAttribute('aria-label', Mal.t('close'));
+    Mal.tap(close, PA.close);
+    head.appendChild(close);
+    sheet.appendChild(head);
+
+    /* ---------- today ---------- */
+    var today = section(Mal.t('secToday'));
+    var used = Math.round(T.usedToday() / 60000);
+    today.appendChild(el('p', 'big', Mal.esc(S.dailyMin > 0 ? Mal.t('usedOf', { m: used, max: S.dailyMin }) : Mal.t('usedNoLimit', { m: used }))));
+    var asleep = T.asleep();
+    var info = T.wakeInfo();
+    var status = !asleep ? Mal.t('statusAwake')
+      : (info.tomorrow ? Mal.t('statusMorning', { time: Mal.clock(info.until) }) : Mal.t('statusUntil', { time: Mal.clock(info.until) }));
+    today.appendChild(el('p', 'note', Mal.esc(status)));
+    if (asleep) {
+      var wake = el('button', 'btn', Mal.esc(Mal.t('wake10')));
+      Mal.tap(wake, function () { T.grant(10); PA.close(); });
+      today.appendChild(wake);
+    }
+    // last 7 days
+    var hist = T.history(), bars = el('div', 'bars'), max = Math.max(S.dailyMin || 30, 1);
+    for (var d = 6; d >= 0; d--) {
+      var key = Mal.dayKey(Date.now() - d * 86400000);
+      var mins = Math.round((hist[key] || 0) / 60000);
+      var dt = new Date(Date.now() - d * 86400000);
+      var dayName = dt.toLocaleDateString(Mal.lang === 'de' ? 'de-DE' : 'en-US', { weekday: 'short' });
+      var bar = el('div', 'bar' + (d === 0 ? ' today' : ''), '<i>' + mins + '</i><span>' + Mal.esc(dayName) + '</span>');
+      bar.style.height = Math.max(4, Math.min(100, mins / max * 100)) + '%';
+      bars.appendChild(bar);
+    }
+    today.appendChild(el('div', 'lbl', Mal.esc(Mal.t('last7'))));
+    today.appendChild(bars);
+
+    /* ---------- painting time ---------- */
+    var time = section(Mal.t('secTime'));
+    chips(time, Mal.t('agePreset'), [
+      { v: '2', l: Mal.t('age_2') }, { v: '3-4', l: Mal.t('age_3-4') }, { v: '5-6', l: Mal.t('age_5-6') }
+    ], S.age, function (v) { applyAge(v); });
+    if (S.age === '2') time.appendChild(el('p', 'note warn', Mal.esc(Mal.t('under3'))));
+    chips(time, Mal.t('session'), [1, 5, 10, 15, 20, 30, 0].map(function (n) {
+      return { v: n, l: n === 1 ? Mal.t('testMin') : n === 0 ? Mal.t('unlimited') : minutes(n) };
+    }), S.sessionMin, function (v) { setS('sessionMin', v); });
+    chips(time, Mal.t('daily'), [10, 15, 30, 45, 60, 0].map(function (n) {
+      return { v: n, l: n === 0 ? Mal.t('unlimited') : minutes(n) };
+    }), S.dailyMin, function (v) { setS('dailyMin', v); });
+    chips(time, Mal.t('breakAfter'), [15, 30, 60, 120].map(function (n) {
+      return { v: n, l: minutes(n) };
+    }), S.breakMin, function (v) { setS('breakMin', v); });
+    chips(time, Mal.t('bedtime'), [null, '18:00', '18:30', '19:00', '19:30', '20:00'].map(function (v) {
+      return { v: v, l: v === null ? Mal.t('off') : v };
+    }), S.bedtime, function (v) { setS('bedtime', v); });
+    // rest days (multi-select, Monday first)
+    var restRow = el('div', 'row');
+    restRow.appendChild(el('div', 'lbl', Mal.esc(Mal.t('restDays'))));
+    var restBox = el('div', 'chips');
+    [1, 2, 3, 4, 5, 6, 0].forEach(function (wd) {
+      var ref = new Date(2026, 0, 4 + wd); // 4 Jan 2026 was a Sunday
+      var name = ref.toLocaleDateString(Mal.lang === 'de' ? 'de-DE' : 'en-US', { weekday: 'short' });
+      var on = (S.restDays || []).indexOf(wd) >= 0;
+      var b = el('button', 'chip' + (on ? ' on' : ''), Mal.esc(name));
+      Mal.tap(b, function () {
+        var list = (S.restDays || []).slice();
+        var i = list.indexOf(wd);
+        if (i >= 0) list.splice(i, 1); else if (list.length < 6) list.push(wd);
+        setS('restDays', list);
+        render();
+      });
+      restBox.appendChild(b);
+    });
+    restRow.appendChild(restBox);
+    time.appendChild(restRow);
+    time.appendChild(el('p', 'note', Mal.esc(Mal.t('restNote'))));
+    chips(time, Mal.t('sunClock'), onOff(), S.sun, function (v) { setS('sun', v); });
+
+    /* ---------- chapters ---------- */
+    var chs = section(Mal.t('secChapters'));
+    chips(chs, Mal.t('pace'), [1, 2, 3, 7].map(function (n) {
+      return { v: n, l: n === 1 ? '1 ' + Mal.t('paceDay') : Mal.t('paceDays', { n: n }) };
+    }), S.pace, function (v) { setS('pace', v); Mal.emit('story'); });
+    Mal.CHAPTERS.forEach(function (ch) {
+      var s = Mal.story.status(ch);
+      var row = el('div', 'chap');
+      row.appendChild(el('span', 'ico', Mal.icon(ch.id)));
+      var txt = s.open ? Mal.t('chOpen') : (s.inDays <= 1 ? Mal.t('chTomorrow') : Mal.t('chInDays', { n: s.inDays }));
+      row.appendChild(el('span', 'nm', Mal.esc(Mal.t('chapter_' + ch.id)) + '<br><span class="st">' + Mal.esc(txt) + '</span>'));
+      if (!s.open) {
+        var b = el('button', 'btn small secondary', Mal.esc(Mal.t('unlock')));
+        Mal.tap(b, function () { Mal.story.unlock(ch.id); render(); });
+        row.appendChild(b);
+      }
+      chs.appendChild(row);
+    });
+    var all = el('button', 'btn secondary', Mal.esc(Mal.t('unlockAll')));
+    Mal.tap(all, function () { Mal.story.unlockAll(); render(); });
+    chs.appendChild(all);
+    chs.appendChild(el('p', 'note', Mal.esc(Mal.t('chapterNote'))));
+
+    /* ---------- gallery ---------- */
+    var gal = section(Mal.t('secGallery'));
+    var countP = el('p', 'note', '…');
+    gal.appendChild(countP);
+    Mal.gallery.list().then(function (list) {
+      countP.textContent = list.length === 1 ? Mal.t('galleryOne') : Mal.t('galleryCount', { n: list.length });
+    });
+    var openG = el('button', 'btn', Mal.esc(Mal.t('galleryOpen')));
+    Mal.tap(openG, function () { closeOverlay('parent'); Mal.gallery.open('parent'); });
+    gal.appendChild(openG);
+
+    /* ---------- language & sound ---------- */
+    var snd = section(Mal.t('secSound'));
+    chips(snd, Mal.t('language'), [{ v: 'de', l: 'Deutsch' }, { v: 'en', l: 'English' }], Mal.lang, function (v) { Mal.setLang(v); });
+    chips(snd, Mal.t('tones'), onOff(), S.tones, function (v) { setS('tones', v); if (!v) A.stopAllTones(); });
+    chips(snd, Mal.t('voice'), onOff(), S.voice, function (v) { setS('voice', v); if (!v) A.stopTalk(); });
+
+    /* ---------- why ---------- */
+    var why = section(Mal.t('secWhy'));
+    why.classList.add('why');
+    Mal.t('why').forEach(function (p) { why.appendChild(el('p', '', Mal.esc(p))); });
+
+    /* ---------- reset ---------- */
+    var rs = section(Mal.t('secReset'));
+    var rb = el('button', 'btn danger hold', Mal.RING + Mal.esc(Mal.t('resetHold')));
+    Mal.hold(rb, 2500, function () {
+      Mal.gallery.clearAll().then(function () {
+        Mal.store.clearAll();
+        location.reload();
+      });
+    });
+    rs.appendChild(rb);
+    rs.appendChild(el('p', 'note', Mal.esc(Mal.t('resetNote'))));
+
+    sheet.scrollTop = keepScroll;
+  }
+
+  function applyAge(age) {
+    var p = Mal.AGE_PRESETS[age];
+    Mal.settings.age = age;
+    Object.keys(p).forEach(function (k) { Mal.settings[k] = p[k]; });
+    Mal.saveSettings();
+  }
+  Mal.on('lang', function () { if ($('parent').classList.contains('open')) render(); });
+
+  /* ============================================================
+     FIRST RUN — grown-ups see this once, before Klecks says hello
+     ============================================================ */
+  PA.firstRun = function (done) {
+    var box = $('firstCard');
+    var top = el('div', 'first-klecks');
+    var k = new Mal.Klecks(top, { color: '#1e88e5' });
+    function draw() {
+      box.innerHTML = '';
+      box.appendChild(top);
+      k.wave();
+      box.appendChild(el('h1', '', Mal.esc(Mal.t('firstTitle'))));
+      var ul = el('ul', '');
+      Mal.t('firstPoints').forEach(function (p) { ul.appendChild(el('li', '', Mal.esc(p))); });
+      box.appendChild(ul);
+      box.appendChild(el('div', 'lbl', Mal.esc(Mal.t('firstAge'))));
+      var ages = el('div', 'chips');
+      ['2', '3-4', '5-6'].forEach(function (a) {
+        var b = el('button', 'chip' + (Mal.settings.age === a ? ' on' : ''), Mal.esc(Mal.t('age_' + a)));
+        Mal.tap(b, function () { applyAge(a); draw(); });
+        ages.appendChild(b);
+      });
+      box.appendChild(ages);
+      if (Mal.settings.age === '2') box.appendChild(el('p', 'note warn', Mal.esc(Mal.t('under3'))));
+      var langs = el('div', 'chips langs');
+      [['de', 'Deutsch'], ['en', 'English']].forEach(function (l) {
+        var b = el('button', 'chip' + (Mal.lang === l[0] ? ' on' : ''), l[1]);
+        Mal.tap(b, function () { Mal.setLang(l[0]); draw(); });
+        langs.appendChild(b);
+      });
+      box.appendChild(langs);
+      var go = el('button', 'btn go', Mal.esc(Mal.t('firstStart')));
+      Mal.tap(go, function () {
+        closeOverlay('firstrun');
+        box.innerHTML = '';
+        done();
+      });
+      box.appendChild(go);
+      box.appendChild(el('p', 'note', Mal.esc(Mal.t('firstHint'))));
+    }
+    applyAge(Mal.settings.age);
+    draw();
+    openOverlay('firstrun');
+  };
+})();

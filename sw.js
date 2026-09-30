@@ -1,5 +1,5 @@
 /* Malspaß service worker — cache-first so the app works fully offline */
-var CACHE = 'malspass-v6';
+var CACHE = 'malspass-v7';
 var ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,17 @@ var ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
+  './css/app.css',
+  './js/core.js',
+  './js/texts.js',
+  './js/audio.js',
+  './js/mascot.js',
+  './js/brushes.js',
+  './js/paint.js',
+  './js/session.js',
+  './js/gallery.js',
+  './js/parent.js',
+  './js/app.js',
   './audio/de-black.mp3',
   './audio/de-blue.mp3',
   './audio/de-brown.mp3',

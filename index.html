@@ -11,599 +11,91 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="css/app.css">
 <title>Malspaß</title>
-<style>
-  * {
-    margin: 0; padding: 0; box-sizing: border-box;
-    -webkit-user-select: none; user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    position: fixed;
-    inset: 0;
-    background: #fdfbf7;
-    touch-action: none;
-    overscroll-behavior: none;
-  }
-  #paper {
-    position: absolute;
-    inset: 0;
-    touch-action: none;
-    cursor: crosshair;
-  }
-  /* ---------- color palette ---------- */
-  #palette {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 2vmin;
-    padding: 1.5vmin 2vmin calc(1.5vmin + env(safe-area-inset-bottom, 0px));
-    background: rgba(255,255,255,0.92);
-    box-shadow: 0 -2px 14px rgba(0,0,0,0.10);
-    touch-action: none;
-    z-index: 10;
-  }
-  .swatch {
-    flex: 1 1 0;
-    max-width: 11vmin;
-    aspect-ratio: 1 / 1;
-    min-width: 34px;
-    min-height: 34px;
-    border-radius: 50%;
-    border: 3px solid rgba(0,0,0,0.15);
-    transition: transform 0.15s ease, border 0.15s ease, box-shadow 0.15s ease;
-    touch-action: none;
-  }
-  .swatch.selected {
-    transform: scale(1.28) translateY(-6px);
-    border: 4px solid #333;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-  }
-  /* white swatch needs a visible edge */
-  .swatch[data-key="white"] { border-color: rgba(0,0,0,0.3); }
-
-  /* ---------- corner buttons (parent controls) ---------- */
-  .corner {
-    position: absolute;
-    z-index: 11;
-    width: 13vmin; height: 13vmin;
-    min-width: 52px; min-height: 52px;
-    max-width: 76px; max-height: 76px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255,255,255,0.9);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-    font-size: clamp(15px, 4vmin, 24px);
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-weight: 700;
-    color: #444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-  }
-  #langBtn  { top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(10px + env(safe-area-inset-left, 0px)); }
-  #clearBtn { top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px)); }
-
-  /* hold-to-clear progress ring */
-  #clearBtn { position: absolute; overflow: visible; }
-  #clearRing {
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    pointer-events: none;
-  }
-  #clearBtn.holding { transform: scale(0.94); }
-
-  /* big friendly flash when canvas is cleared */
-  #flash {
-    position: absolute; inset: 0;
-    background: #fff;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9;
-    transition: opacity 0.5s ease;
-  }
-</style>
 </head>
 <body>
 <canvas id="paper"></canvas>
 <div id="flash"></div>
 
-<button id="langBtn" class="corner" aria-label="Sprache wechseln">DE</button>
-<button id="clearBtn" class="corner" aria-label="Alles löschen">
-  <svg id="clearRing" viewBox="0 0 100 100">
-    <circle id="ringArc" cx="50" cy="50" r="47" fill="none" stroke="#e74c3c" stroke-width="6"
-            stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3"
-            transform="rotate(-90 50 50)"/>
-  </svg>
-  🗑
-</button>
+<!-- ============ PAINTING (floats over the canvas) ============ -->
+<div id="paintUI" class="screen">
+  <button id="homeBtn" class="corner tl hold" aria-label="Zurück / Home"></button>
+  <button class="corner tl2 lang" aria-label="Sprache / Language">DE</button>
+  <div id="paintSky" class="sky-slot mini"></div>
+  <button id="sheetBtn" class="corner tr hold" aria-label="An den Kühlschrank / On the fridge"></button>
+  <div id="mirrorAxis"></div>
+  <div id="dock"><div id="tools"></div><div id="palette"></div></div>
+</div>
 
-<div id="palette"></div>
+<!-- ============ HOME: Klecks' world ============ -->
+<div id="home" class="screen">
+  <button class="corner tl lang" aria-label="Sprache / Language">DE</button>
+  <button id="parentBtn" class="corner tr hold small" aria-label="Eltern / Parents"></button>
+  <div class="home-hero"><div id="homeSky" class="sky-slot big"></div></div>
+  <div id="chapters"></div>
+  <button id="fridgeBtn" class="fridge-btn" aria-label="Kühlschrank / Fridge"></button>
+</div>
 
-<script>
-(function () {
-  'use strict';
+<!-- ============ FRIDGE (gallery) ============ -->
+<div id="fridge" class="screen">
+  <button id="fridgeBack" class="corner tl" aria-label="Zurück / Back"></button>
+  <div id="fridgeGrid" class="scroll"></div>
+  <div id="fridgeEmpty" class="fridge-empty"></div>
+  <div class="fridge-handle"></div>
+</div>
 
-  // Offline support (no-op when opened as a local file)
-  try {
-    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      navigator.serviceWorker.register('sw.js').catch(function () {});
-    }
-  } catch (err) {}
+<!-- ============ SLEEP ============ -->
+<div id="sleep" class="screen">
+  <div class="sky-evening"></div>
+  <div class="stars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="moon"></div>
+  <div class="sleep-stage"><div id="sleepKlecks"></div><div id="sleepPot"></div></div>
+  <div id="sleepInfo" class="sleep-info"></div>
+  <button id="sleepParentBtn" class="corner tr hold small" aria-label="Eltern / Parents"></button>
+</div>
 
-  /* ============================================================
-     GLOBAL HARDENING — nothing a toddler does should break the app
-     ============================================================ */
-  // Block scrolling, pinch-zoom, pull-to-refresh, double-tap zoom
-  document.addEventListener('touchstart',  function (e) { if (e.touches.length > 0) e.preventDefault(); }, { passive: false });
-  document.addEventListener('touchmove',   function (e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('touchend',    function (e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('gesturestart',  function (e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('dblclick',    function (e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-  window.addEventListener('wheel', function (e) { e.preventDefault(); }, { passive: false });
-  // Swallow any uncaught error so the app never dies mid-painting
-  window.addEventListener('error', function (e) { e.preventDefault(); return true; });
-  window.addEventListener('unhandledrejection', function (e) { e.preventDefault(); });
+<!-- ============ OVERLAYS ============ -->
+<div id="intro" class="overlay">
+  <div class="intro-row"><div id="introIcon" class="intro-icon"></div><div id="introKlecks"></div></div>
+  <p id="introText" class="intro-text"></p>
+</div>
 
-  // Keep the screen awake while painting (best effort)
-  var wakeLock = null;
-  function requestWake() {
-    try {
-      if ('wakeLock' in navigator) {
-        navigator.wakeLock.request('screen').then(function (wl) { wakeLock = wl; }).catch(function () {});
-      }
-    } catch (err) {}
-  }
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') requestWake();
-  });
+<div id="viewer" class="overlay">
+  <div id="viewerStage" class="viewer-stage"><img id="viewerImg" alt=""><canvas id="viewerCanvas"></canvas></div>
+  <div class="viewer-bar">
+    <button id="vClose" class="round" aria-label="Schließen / Close"></button>
+    <button id="vPlay" class="round" aria-label="Nochmal ansehen / Replay"></button>
+    <button id="vStar" class="round parent-only" aria-label="Favorit / Favorite"></button>
+    <button id="vShare" class="round parent-only" aria-label="Sichern / Save"></button>
+    <button id="vDel" class="round hold parent-only" aria-label="Löschen / Delete"></button>
+  </div>
+</div>
 
-  /* ============================================================
-     COLORS & LANGUAGE
-     ============================================================ */
-  // freq: C-major pentatonic, rainbow order (warm = low, cool = high) —
-  // any combination of simultaneous fingers stays consonant
-  var COLORS = [
-    { key: 'red',    hex: '#e53935', de: 'Rot',     en: 'Red',    freq: 261.63 }, // C4
-    { key: 'orange', hex: '#fb8c00', de: 'Orange',  en: 'Orange', freq: 293.66 }, // D4
-    { key: 'yellow', hex: '#fdd835', de: 'Gelb',    en: 'Yellow', freq: 329.63 }, // E4
-    { key: 'green',  hex: '#43a047', de: 'Grün',    en: 'Green',  freq: 392.00 }, // G4
-    { key: 'blue',   hex: '#1e88e5', de: 'Blau',    en: 'Blue',   freq: 440.00 }, // A4
-    { key: 'purple', hex: '#8e24aa', de: 'Lila',    en: 'Purple', freq: 523.25 }, // C5
-    { key: 'pink',   hex: '#f48fb1', de: 'Rosa',    en: 'Pink',   freq: 587.33 }, // D5
-    { key: 'brown',  hex: '#795548', de: 'Braun',   en: 'Brown',  freq: 196.00 }, // G3
-    { key: 'black',  hex: '#212121', de: 'Schwarz', en: 'Black',  freq: 130.81 }, // C3
-    { key: 'white',  hex: '#ffffff', de: 'Weiß',    en: 'White',  freq: 659.26 }  // E5
-  ];
-  var lang = 'de'; // 'de' | 'en'
-  var currentColor = COLORS[4]; // start with blue
+<div id="gate" class="overlay">
+  <div id="gateCard" class="gate-card">
+    <button id="gateClose" class="gate-close" aria-label="Schließen / Close"></button>
+    <h2 id="gateTitle"></h2>
+    <p id="gateAsk" class="gate-ask"></p>
+    <p id="gateWords" class="gate-words"></p>
+    <div id="gateSlots" class="gate-slots"></div>
+    <div id="keypad" class="keypad"></div>
+  </div>
+</div>
 
-  /* ============================================================
-     SPEECH
-     ============================================================ */
-  var voices = [];
-  function loadVoices() {
-    try { voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (err) { voices = []; }
-  }
-  loadVoices();
-  try {
-    if (window.speechSynthesis && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  } catch (err) {}
+<div id="parent" class="overlay"><div id="parentSheet" class="sheet scroll"></div></div>
 
-  function pickVoice(langCode) {
-    var pref = langCode === 'de' ? ['de-DE', 'de'] : ['en-US', 'en-GB', 'en'];
-    for (var p = 0; p < pref.length; p++) {
-      for (var i = 0; i < voices.length; i++) {
-        if (voices[i].lang && voices[i].lang.toLowerCase().indexOf(pref[p].toLowerCase()) === 0) return voices[i];
-      }
-    }
-    return null;
-  }
+<div id="firstrun" class="overlay"><div id="firstCard" class="first-card scroll"></div></div>
 
-  function speak(text, langCode) {
-    try {
-      if (!window.speechSynthesis) return;
-      if (speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (err) {} }
-      if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = langCode === 'de' ? 'de-DE' : 'en-US';
-      u.rate = 0.85;
-      u.pitch = 1.1;
-      try {
-        var v = pickVoice(langCode);
-        if (v) u.voice = v;
-      } catch (err) {}
-      setTimeout(function () { try { speechSynthesis.speak(u); } catch (err) {} }, 60);
-    } catch (err) {}
-  }
-
-  /* ============================================================
-     AUDIO FILES — primary sound path (reliable on iOS, plays
-     even with the silent switch on); speech synthesis = fallback
-     ============================================================ */
-  var PHRASES = {
-    clean: { de: 'Alles sauber!', en: 'All clean!' },
-    lang:  { de: 'Deutsch',       en: 'English'    }
-  };
-  var audioCache = {};
-  var audioUnlocked = false;
-  var pendingSay = null;
-
-  function getAudio(langCode, key) {
-    var id = langCode + '-' + key;
-    if (!audioCache[id]) {
-      var a = new Audio('audio/' + id + '.mp3');
-      a.preload = 'auto';
-      audioCache[id] = a;
-    }
-    return audioCache[id];
-  }
-
-  // preload everything up front (24 small files, cached by the service worker)
-  ['de', 'en'].forEach(function (l) {
-    COLORS.forEach(function (c) { getAudio(l, c.key); });
-    Object.keys(PHRASES).forEach(function (k) { getAudio(l, k); });
-  });
-
-  function fallbackText(key) {
-    if (PHRASES[key]) return PHRASES[key][lang];
-    for (var i = 0; i < COLORS.length; i++) {
-      if (COLORS[i].key === key) return lang === 'de' ? COLORS[i].de : COLORS[i].en;
-    }
-    return '';
-  }
-
-  function say(key) {
-    try {
-      // stop whatever is currently playing so fast taps stay snappy
-      Object.keys(audioCache).forEach(function (id) {
-        var o = audioCache[id];
-        if (!o.paused) { try { o.pause(); o.currentTime = 0; } catch (err) {} }
-      });
-      var a = getAudio(lang, key);
-      a.currentTime = 0;
-      var p = a.play();
-      if (p && p.catch) {
-        p.catch(function () {
-          pendingSay = key;             // will retry right after unlock
-          speak(fallbackText(key), lang); // and try speech in the meantime
-        });
-      }
-    } catch (err) {
-      speak(fallbackText(key), lang);
-    }
-  }
-
-  // iOS unlocks media playback on the first real touch — prime every clip once
-  function unlockAudio() {
-    if (audioUnlocked) return;
-    audioUnlocked = true;
-    Object.keys(audioCache).forEach(function (id) {
-      var a = audioCache[id];
-      try {
-        a.muted = true;
-        var p = a.play();
-        if (p && p.then) {
-          p.then(function () { a.pause(); a.currentTime = 0; a.muted = false; })
-           .catch(function () { a.muted = false; });
-        } else {
-          a.pause(); a.currentTime = 0; a.muted = false;
-        }
-      } catch (err) { try { a.muted = false; } catch (e2) {} }
-    });
-    if (pendingSay) {
-      var k = pendingSay; pendingSay = null;
-      setTimeout(function () { say(k); }, 150);
-    }
-  }
-  document.addEventListener('touchend', unlockAudio, true);
-  document.addEventListener('pointerup', unlockAudio, true);
-
-  /* ============================================================
-     PAINTING TONES — one soft-flute voice per finger (Web Audio),
-     routed through an <audio> element so iOS treats it as media
-     playback and it sounds even with the silent switch on
-     ============================================================ */
-  var AC = null, toneMaster = null, toneStreamAudio = null;
-  var tones = {}; // pointerId -> {osc, gain, lfo, lfoGain}
-  var VOICE_VOL = 0.14;
-
-  function initToneEngine() {
-    if (AC) return;
-    try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      AC = new Ctx();
-      toneMaster = AC.createGain();
-      toneMaster.gain.value = 0.9;
-      var comp = AC.createDynamicsCompressor(); // keeps 5-finger chords from clipping
-      comp.threshold.value = -18;
-      comp.ratio.value = 6;
-      toneMaster.connect(comp);
-      var routed = false;
-      try {
-        var dest = AC.createMediaStreamDestination();
-        comp.connect(dest);
-        toneStreamAudio = new Audio();
-        toneStreamAudio.setAttribute('playsinline', '');
-        toneStreamAudio.srcObject = dest.stream;
-        var p = toneStreamAudio.play();
-        if (p && p.catch) {
-          p.catch(function () {
-            try { comp.connect(AC.destination); } catch (err) {}
-          });
-        }
-        routed = true;
-      } catch (err) {}
-      if (!routed) { try { comp.connect(AC.destination); } catch (err) {} }
-    } catch (err) { AC = null; }
-  }
-
-  function startTone(pointerId) {
-    try {
-      initToneEngine();
-      if (!AC) return;
-      if (AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
-      stopTone(pointerId);
-      var f = currentColor.freq;
-      var now = AC.currentTime;
-      var osc = AC.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      var g = AC.createGain();
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(VOICE_VOL, now + 0.08); // soft attack, no click
-      // gentle 5 Hz vibrato = flute-like life
-      var lfo = AC.createOscillator();
-      lfo.frequency.value = 5;
-      var lfoGain = AC.createGain();
-      lfoGain.gain.value = f * 0.007;
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      osc.connect(g);
-      g.connect(toneMaster);
-      osc.start(now);
-      lfo.start(now);
-      tones[pointerId] = { osc: osc, gain: g, lfo: lfo, lfoGain: lfoGain };
-    } catch (err) {}
-  }
-
-  function stopTone(pointerId) {
-    var t = tones[pointerId];
-    if (!t) return;
-    delete tones[pointerId];
-    try {
-      var now = AC.currentTime;
-      t.gain.gain.cancelScheduledValues(now);
-      t.gain.gain.setValueAtTime(t.gain.gain.value, now);
-      t.gain.gain.linearRampToValueAtTime(0.0001, now + 0.15); // soft release
-      t.osc.stop(now + 0.2);
-      t.lfo.stop(now + 0.2);
-    } catch (err) {
-      try { t.osc.stop(); t.lfo.stop(); } catch (e2) {}
-    }
-  }
-
-  function stopAllTones() {
-    Object.keys(tones).forEach(function (id) { stopTone(id); });
-  }
-  // tiny introspection hook (used by automated tests, harmless in production)
-  window.__malDebug = function () {
-    return {
-      ac: !!AC,
-      state: AC ? AC.state : 'none',
-      voices: Object.keys(tones).map(function (id) { return tones[id].osc.frequency.value; })
-    };
-  };
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState !== 'visible') stopAllTones();
-    else if (AC && AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
-  });
-
-  /* ============================================================
-     CANVAS
-     ============================================================ */
-  var canvas = document.getElementById('paper');
-  var ctx = canvas.getContext('2d');
-  var dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-  var BRUSH = 26; // CSS px
-
-  function sizeCanvas(preserve) {
-    var w = window.innerWidth, h = window.innerHeight;
-    var snapshot = null;
-    if (preserve && canvas.width > 0 && canvas.height > 0) {
-      try {
-        snapshot = document.createElement('canvas');
-        snapshot.width = canvas.width;
-        snapshot.height = canvas.height;
-        snapshot.getContext('2d').drawImage(canvas, 0, 0);
-      } catch (err) { snapshot = null; }
-    }
-    canvas.width  = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#fdfbf7';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (snapshot) {
-      try { ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, canvas.width, canvas.height); } catch (err) {}
-    }
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }
-  sizeCanvas(false);
-  window.addEventListener('resize', function () { sizeCanvas(true); });
-  window.addEventListener('orientationchange', function () { setTimeout(function () { sizeCanvas(true); }, 250); });
-
-  /* ---------- multi-touch painting via pointer events ---------- */
-  var strokes = {}; // pointerId -> {x, y}
-
-  function canvasPos(e) {
-    return { x: e.clientX * dpr, y: e.clientY * dpr };
-  }
-
-  function drawDot(p) {
-    ctx.beginPath();
-    ctx.fillStyle = currentColor.hex;
-    ctx.arc(p.x, p.y, (BRUSH * dpr) / 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function drawLine(a, b) {
-    ctx.beginPath();
-    ctx.strokeStyle = currentColor.hex;
-    ctx.lineWidth = BRUSH * dpr;
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.stroke();
-  }
-
-  canvas.addEventListener('pointerdown', function (e) {
-    e.preventDefault();
-    requestWake();
-    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
-    var p = canvasPos(e);
-    strokes[e.pointerId] = p;
-    drawDot(p);
-    startTone(e.pointerId);
-  });
-
-  canvas.addEventListener('pointermove', function (e) {
-    if (!strokes[e.pointerId]) return;
-    e.preventDefault();
-    var events = (typeof e.getCoalescedEvents === 'function') ? e.getCoalescedEvents() : [e];
-    if (!events || !events.length) events = [e];
-    var last = strokes[e.pointerId];
-    for (var i = 0; i < events.length; i++) {
-      var p = canvasPos(events[i]);
-      drawLine(last, p);
-      last = p;
-    }
-    strokes[e.pointerId] = last;
-  });
-
-  function endStroke(e) { delete strokes[e.pointerId]; stopTone(e.pointerId); }
-  canvas.addEventListener('pointerup', endStroke);
-  canvas.addEventListener('pointercancel', endStroke);
-
-  /* ============================================================
-     PALETTE
-     ============================================================ */
-  var paletteEl = document.getElementById('palette');
-  COLORS.forEach(function (c) {
-    var b = document.createElement('button');
-    b.className = 'swatch';
-    b.dataset.key = c.key;
-    b.style.background = c.hex;
-    b.setAttribute('aria-label', c.de + ' / ' + c.en);
-    // pointerdown (not click) → instant response for little fingers
-    b.addEventListener('pointerdown', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      selectColor(c);
-    });
-    paletteEl.appendChild(b);
-  });
-
-  function selectColor(c) {
-    currentColor = c;
-    var swatches = paletteEl.children;
-    for (var i = 0; i < swatches.length; i++) {
-      swatches[i].classList.toggle('selected', swatches[i].dataset.key === c.key);
-    }
-    say(c.key);
-  }
-  // initial selection (no speech on load)
-  (function () {
-    var swatches = paletteEl.children;
-    for (var i = 0; i < swatches.length; i++) {
-      swatches[i].classList.toggle('selected', swatches[i].dataset.key === currentColor.key);
-    }
-  })();
-
-  /* ============================================================
-     LANGUAGE TOGGLE (top-left)
-     ============================================================ */
-  var langBtn = document.getElementById('langBtn');
-  langBtn.addEventListener('pointerdown', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    lang = (lang === 'de') ? 'en' : 'de';
-    langBtn.textContent = lang.toUpperCase();
-    say('lang');
-  });
-
-  /* ============================================================
-     HOLD-TO-CLEAR (top-right, 2-second hold)
-     ============================================================ */
-  var clearBtn = document.getElementById('clearBtn');
-  var ringArc = document.getElementById('ringArc');
-  var RING_LEN = 295.3;
-  var HOLD_MS = 2000;
-  var holdStart = null;
-  var holdRAF = null;
-
-  function ringProgress(frac) {
-    ringArc.style.strokeDashoffset = String(RING_LEN * (1 - Math.max(0, Math.min(1, frac))));
-  }
-
-  function holdTick(ts) {
-    if (holdStart === null) return;
-    var frac = (ts - holdStart) / HOLD_MS;
-    ringProgress(frac);
-    if (frac >= 1) {
-      cancelHold();
-      clearCanvas();
-    } else {
-      holdRAF = requestAnimationFrame(holdTick);
-    }
-  }
-
-  function startHold(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    try { clearBtn.setPointerCapture(e.pointerId); } catch (err) {}
-    clearBtn.classList.add('holding');
-    holdStart = performance.now();
-    holdRAF = requestAnimationFrame(holdTick);
-  }
-
-  function cancelHold() {
-    holdStart = null;
-    if (holdRAF) { cancelAnimationFrame(holdRAF); holdRAF = null; }
-    clearBtn.classList.remove('holding');
-    ringProgress(0);
-  }
-
-  clearBtn.addEventListener('pointerdown', startHold);
-  clearBtn.addEventListener('pointerup', cancelHold);
-  clearBtn.addEventListener('pointercancel', cancelHold);
-  clearBtn.addEventListener('pointerleave', function () { if (holdStart !== null) cancelHold(); });
-
-  var flash = document.getElementById('flash');
-  function clearCanvas() {
-    ctx.fillStyle = '#fdfbf7';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    flash.style.transition = 'none';
-    flash.style.opacity = '0.9';
-    void flash.offsetWidth; // reflow
-    flash.style.transition = 'opacity 0.5s ease';
-    flash.style.opacity = '0';
-    say('clean');
-  }
-})();
-</script>
+<script src="js/core.js"></script>
+<script src="js/texts.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/mascot.js"></script>
+<script src="js/brushes.js"></script>
+<script src="js/paint.js"></script>
+<script src="js/session.js"></script>
+<script src="js/gallery.js"></script>
+<script src="js/parent.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

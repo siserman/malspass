@@ -1,7 +1,7 @@
 {
   "name": "Malspaß",
   "short_name": "Malspaß",
-  "description": "Finger painting for toddlers — colors spoken in German and English",
+  "description": "Finger painting with Klecks — colors spoken in German and English, with a built-in bedtime for screen time",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
