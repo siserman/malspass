@@ -45,8 +45,10 @@ var ASSETS = [
 ];
 
 self.addEventListener('install', function (e) {
+  // 'reload' skips the HTTP cache, so a new version never caches an old file
+  var fresh = ASSETS.map(function (url) { return new Request(url, { cache: 'reload' }); });
   e.waitUntil(
-    caches.open(CACHE).then(function (c) { return c.addAll(ASSETS); }).then(function () { return self.skipWaiting(); })
+    caches.open(CACHE).then(function (c) { return c.addAll(fresh); }).then(function () { return self.skipWaiting(); })
   );
 });
 
