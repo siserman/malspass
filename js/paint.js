@@ -75,6 +75,7 @@
     page = { ch: chapter.id, brush: chapter.brush, bg: chapter.bg, w: w, h: h, studio: !!chapter.studio,
              strokes: [], ev: [], full: false, colors: {}, found: {} };
     tally = [];
+    undone = false;
     if (chapter.brush === 'mix') { page.gw = Math.ceil(w / B.MIX_CELL); page.gh = Math.ceil(h / B.MIX_CELL); }
     S = B.surface(canvas, page);
     B.clear(S);
@@ -122,6 +123,7 @@
     page.ev.push(sid, q[0], q[1]);
   }
   var tally = []; // what each stroke added to page.colors, so undo can take it back
+  var undone = false; // undo works once; the next stroke makes it available again
   function count(st, amount) {
     if (st.meta.b === 'eraser') return;
     var key = page.brush === 'rainbow' ? 'rainbow' : st.key;
@@ -177,6 +179,7 @@
       if (tool === 'bucket') meta.m = B.findFill(S, q[0], q[1]);
     }
     page.strokes.push(meta);
+    undone = false;
     var st = B.stroke(meta);
     st.sid = sid;
     var p = B.point(S, q[0], q[1]);
@@ -227,8 +230,11 @@
   canvas.addEventListener('pointercancel', function (e) { endStroke(e.pointerId); });
   P.endAll = function () { Object.keys(active).forEach(endStroke); };
 
-  // one step back: drop the newest stroke and paint the page again from the recording
-  P.canUndo = function () { return !!page && page.strokes.length > 0 && !page.full && !Object.keys(active).length; };
+  // one step back, once: the newest stroke goes away and the page is painted again from the
+  // recording. Only the last stroke can be taken back; a mark before it belongs to the picture
+  P.canUndo = function () {
+    return !!page && page.strokes.length > 0 && !page.full && !undone && !Object.keys(active).length;
+  };
   P.undo = function () {
     if (!P.canUndo()) return false;
     var sid = page.strokes.length - 1, kept = [];
@@ -244,6 +250,7 @@
     });
     if (!page.strokes.length) page.colors = {};
     tally.length = sid;
+    undone = true;
     B.renderAll(S, page);
     Mal.emit('undo');
     return true;

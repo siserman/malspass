@@ -1,5 +1,5 @@
 /* Malspaß service worker — cache-first so the app works fully offline */
-var CACHE = 'malspass-v9';
+var CACHE = 'malspass-v10';
 // recorded voice clips are listed in audio/clips.js (written by tools/make_voices.py)
 importScripts('audio/clips.js');
 var ASSETS = [

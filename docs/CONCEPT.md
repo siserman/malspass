@@ -146,12 +146,12 @@ Chapters bring new *ideas*. The **Malkasten** (paint box) makes the *painting it
 
 **Rules:**
 - **One new tool at a time.** Children never meet a toolbar full of icons. Each level adds one idea, like Montessori's "isolation of difficulty" and the progressive disclosure UX research recommends for young children.
-- **Calendar, not play time.** By default a new level arrives every 3 days (parents can choose 2, 3, 5 or 7). Painting more never unlocks anything. There are no stars and no "level up!" fanfare, because rewarding children for drawing lowers their later interest (Lepper et al., 1973).
+- **Calendar, not play time.** A new level arrives every 3 days, on its own rhythm, independent of the chapters. Parents can choose 2, 5 or 7 days instead. Painting more never unlocks anything. There are no stars and no "level up!" fanfare, because rewarding children for drawing lowers their later interest (Lepper et al., 1973).
 - **Grown‑ups decide.** Parents can set any level directly: higher for a child who is ready, lower for one who is overwhelmed. A level a parent sets stays fixed.
 - **The same picture data as everywhere else.** Brush width, shade and the exact paint‑bucket area are stored with each stroke, so the time‑lapse, undo and the fridge show exactly what was painted.
 - **Talking about the process.** After the time‑lapse on the fridge, Klecks asks: "Erzähl mal: Wie hast du das gemalt?"
 
-**What it deliberately doesn't do:** no coloring‑in pages and no "correct" result. No layers, selection or text tools: those belong to adult apps. Undo arrives late (level 6) and only one step at a time. Process‑art educators worry that unlimited undo teaches children that a mark is a mistake to remove; the eraser comes first because it is a painting action you can see.
+**What it deliberately doesn't do:** no coloring‑in pages and no "correct" result. No layers, selection or text tools: those belong to adult apps. Undo arrives late (level 6) and takes back only the last stroke, once. The arrow comes back with the next stroke, so a child can't wipe a picture away stroke by stroke. Process‑art educators worry that unlimited undo teaches children that a mark is a mistake to remove. The eraser comes first because it is a painting action you can see.
 
 ## 6. Healthy use — designed in, not bolted on
 
@@ -364,10 +364,12 @@ There is no single official rulebook for painting apps, but the early‑years fr
 6. **Voice:** a voice actor or licensed TTS? What should Klecks sound like — a child's voice or a warm adult voice?
 7. **Tech:** Capacitor *(recommended)* or a rewrite?
 8. **Chapter pace:** every 2 days *(recommended)*?
-9. **Malkasten pace:** a new level every 3 days, independent of the chapters *(recommended)*, or one level per chapter?
-10. **Malkasten by age:** is "up to level 3 / 6 / 7" right for 2 / 3–4 / 5–6? For example, should 3–4‑year‑olds also get light and dark?
-11. **Undo:** late and one step at a time *(recommended)*, or no undo at all (the pure process‑art view)?
-12. **Brushes in the Pinsel‑Kiste:** crayon, watercolor and marker *(prototype)*, or chalk, glitter or a sponge?
+9. **Malkasten by age:** is "up to level 3 / 6 / 7" right for 2 / 3–4 / 5–6? For example, should 3–4‑year‑olds also get light and dark?
+10. **Brushes in the Pinsel‑Kiste:** crayon, watercolor and marker *(prototype)*, or chalk, glitter or a sponge?
+
+**Decided (October 2026):**
+- **Malkasten pace:** a new level every 3 days, independent of the chapters.
+- **Undo:** stays late (level 6) and takes back only the last stroke.
 
 ## 15. The prototype on this branch
 
