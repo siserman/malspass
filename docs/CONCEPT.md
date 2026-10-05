@@ -365,11 +365,11 @@ There is no single official rulebook for painting apps, but the early‑years fr
 7. **Tech:** Capacitor *(recommended)* or a rewrite?
 8. **Chapter pace:** every 2 days *(recommended)*?
 9. **Malkasten by age:** is "up to level 3 / 6 / 7" right for 2 / 3–4 / 5–6? For example, should 3–4‑year‑olds also get light and dark?
-10. **Brushes in the Pinsel‑Kiste:** crayon, watercolor and marker *(prototype)*, or chalk, glitter or a sponge?
 
 **Decided (October 2026):**
 - **Malkasten pace:** a new level every 3 days, independent of the chapters.
 - **Undo:** stays late (level 6) and takes back only the last stroke.
+- **Pinsel‑Kiste:** crayon, watercolor and marker.
 
 ## 15. The prototype on this branch
 
