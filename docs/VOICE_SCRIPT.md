@@ -1,6 +1,6 @@
 # Voice script — Klecks
 
-Everything Klecks says, in both languages: **41 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
+Everything Klecks says, in both languages: **60 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
 
 ## Recording with your ElevenLabs voice — on your computer
 
@@ -19,7 +19,7 @@ python tools/make_voices.py --voice "Laura" --only hello,sleepy --lang de   # re
 - **Tuning:** `--stability 0.5 --similarity 0.8 --style 0` are the defaults. `--speed 0.9` speaks a little slower, if your model supports it. If a single word comes out in the wrong language (short words like "Rosa" can), redo it with `--only pink --model eleven_turbo_v2_5 --language-code`.
 - **ffmpeg** (optional, recommended): if it's installed, the script trims silence at both ends and evens out loudness (mono, 64 kbit/s).
 - **Afterwards** the script rewrites `audio/clips.js` (the app's list of recordings) and bumps the offline cache version in `sw.js`, so the iPad picks up the new sound. Commit and push `audio/` and `sw.js`, then open the app twice on the iPad.
-- **Cost:** all 41 lines in both languages are about 2,000 characters.
+- **Cost:** all 60 lines in both languages are about 3,100 characters.
 - **Licence:** commercial use of ElevenLabs audio needs a **paid** plan (the free plan is non‑commercial and needs attribution). Generate the final set on a paid plan.
 
 **Setting the key for one terminal session** (optional; otherwise the script asks):
@@ -40,6 +40,8 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 - **Describe, don't praise:** "So viel Blau!" is said with wonder, not like a teacher's grade.
 - **Goodnight lines** get quieter and slower.
 - **Color and shape words** are also combined ("So viel" + "Blau!"), so "So viel" should end open and rising.
+- **Tool names** ("Wachsmalstift", "Dünn", "Hell") are naming words, like in a picture book: calm and clear. Children hear them every time they tap a tool, so they must never sound excited.
+- **"Erzähl mal: Wie hast du das gemalt?"** is a real question: curious and warm, with room to answer. It comes after the time‑lapse on the fridge, when a grown‑up is usually watching too.
 
 ## Lines
 
@@ -84,6 +86,34 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 | `ch_night` | Es ist Nacht, und deine Farben leuchten! Mal den Mond und die Sterne! | It's night time, and your colors glow! Paint the moon and the stars! | — |
 | `ch_mix` | Heute mischen wir Farben! Was passiert, wenn Rot und Gelb sich treffen? | Let's mix colors! What happens when red and yellow meet? | — |
 
+### Malkasten — a new tool in the paint box (said once, when the level arrives)
+
+| key | Deutsch | English | recorded |
+|---|---|---|---|
+| `st_colors` | Mein Malkasten ist größer geworden! Jetzt gibt es auch Orange, Lila, Rosa und Braun. | My paint box got bigger! Now there's orange, purple, pink and brown too. | — |
+| `st_sizes` | Dicke und dünne Pinsel! Probier mal ganz dünn – und dann ganz dick. | Thick and thin brushes! Try really thin – and then really thick. | — |
+| `st_eraser` | Ein Radiergummi! Damit kannst du etwas wieder wegmachen und neu malen. | An eraser! You can take something away and paint it again. | — |
+| `st_brushes` | Neue Pinsel! Wachsmalstift, Wasserfarbe und Filzstift. Jeder malt ein bisschen anders. | New brushes! Crayon, watercolor and marker. Each one paints a little differently. | — |
+| `st_bucket` | Ein Farbeimer! Tipp in eine Fläche, dann wird sie bunt. Und der Pfeil geht einen Schritt zurück. | A paint bucket! Tap inside a shape and it fills with color. And the arrow goes one step back. | — |
+| `st_shades` | Hell und dunkel! Jede Farbe gibt es jetzt heller und dunkler. | Light and dark! Now every color comes lighter and darker. | — |
+
+### Tool names (said each time a tool is tapped — keep them short)
+
+| key | Deutsch | English | recorded |
+|---|---|---|---|
+| `tool_paint` | Fingerfarbe | Finger paint | — |
+| `tool_crayon` | Wachsmalstift | Crayon | — |
+| `tool_water` | Wasserfarbe | Watercolor | — |
+| `tool_marker` | Filzstift | Marker | — |
+| `tool_eraser` | Radiergummi | Eraser | — |
+| `tool_bucket` | Farbeimer | Paint bucket | — |
+| `size_s` | Dünn | Thin | — |
+| `size_m` | Mittel | Medium | — |
+| `size_l` | Dick | Thick | — |
+| `shade_light` | Hell | Light | — |
+| `shade_normal` | Kräftig | Bold | — |
+| `shade_dark` | Dunkel | Dark | — |
+
 ### Shapes (stamps chapter)
 
 | key | Deutsch | English | recorded |
@@ -103,6 +133,7 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 | `manyColors` | So viele Farben! | So many colors! | — |
 | `fridge` | Das kommt an den Kühlschrank! | That goes on the fridge! | — |
 | `fridgeEmpty` | Der Kühlschrank ist noch leer. Komm, wir malen was! | The fridge is still empty. Come on, let's paint something! | — |
+| `tellMe` | Erzähl mal: Wie hast du das gemalt? | Tell me: how did you paint that? | — |
 
 ### Winding down
 
@@ -113,5 +144,4 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 | `goodnightDay` | Das war schön heute! Jetzt schlafe ich. Bis morgen! | That was lovely today! Now I am going to sleep. See you tomorrow! | — |
 | `realPaint` | Mal doch mit echten Stiften weiter! | Why not keep painting with real crayons? | — |
 | `awake` | Ausgeschlafen! Wollen wir malen? | I'm all rested! Shall we paint? | — |
-
 Recordings in the app today: 12 German, 12 English. The old English clips and the German "Alles sauber!" / "Deutsch" come from Piper TTS voices trained on non‑commercial data. Re‑record them (`--all`) before a paid release.

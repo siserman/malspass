@@ -229,7 +229,8 @@
         var c = Mal.color(meta.c);
         if (c) A.blip(c.freq, 0.07);
       },
-      onDone: function () { replay = null; }
+      // talking about the process is part of making art (it's in the early-years goals)
+      onDone: function () { replay = null; if (viewer.classList.contains('open')) A.say('tellMe'); }
     });
   });
   Mal.tap($('vStar'), function () {

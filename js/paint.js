@@ -22,6 +22,10 @@
   P.enabled = false;
   P.color = Mal.color('blue');
   P.shape = 'star';
+  // Malkasten (free painting only): tool, width and light/dark shade
+  P.tool = 'paint';
+  P.size = 'm';
+  P.shade = 0;
 
   /* ============================================================
      CANVAS SIZE (keeps the picture when the device is rotated)
@@ -68,8 +72,9 @@
   P.newPage = function (chapter) {
     P.endAll();
     var w = window.innerWidth, h = window.innerHeight;
-    page = { ch: chapter.id, brush: chapter.brush, bg: chapter.bg, w: w, h: h,
+    page = { ch: chapter.id, brush: chapter.brush, bg: chapter.bg, w: w, h: h, studio: !!chapter.studio,
              strokes: [], ev: [], full: false, colors: {}, found: {} };
+    tally = [];
     if (chapter.brush === 'mix') { page.gw = Math.ceil(w / B.MIX_CELL); page.gh = Math.ceil(h / B.MIX_CELL); }
     S = B.surface(canvas, page);
     B.clear(S);
@@ -108,16 +113,21 @@
     var y = Mal.clamp(e.clientY / window.innerHeight, 0, 1);
     return [Math.round(x * B.Q), Math.round(y * B.Q)];
   }
-  function brush() { return B[page.brush] || B.paint; }
+  function brush(name) { return B[name || page.brush] || B.paint; }
+  var SILENT = { stamp: 1, bucket: 1, eraser: 1 }; // no flute tone while using these
 
   function record(sid, q) {
     if (page.full) return;
     if (sid > 65535 || page.ev.length >= MAX_EVENTS * 3) { page.full = true; return; }
     page.ev.push(sid, q[0], q[1]);
   }
+  var tally = []; // what each stroke added to page.colors, so undo can take it back
   function count(st, amount) {
+    if (st.meta.b === 'eraser') return;
     var key = page.brush === 'rainbow' ? 'rainbow' : st.key;
     page.colors[key] = (page.colors[key] || 0) + amount;
+    var t = tally[st.sid] || (tally[st.sid] = {});
+    t[key] = (t[key] || 0) + amount;
   }
 
   var renderQueued = false;
@@ -158,16 +168,24 @@
     endStroke(e.pointerId);
     var q = quant(e);
     var sid = page.strokes.length;
-    var meta = { b: page.brush, c: P.color.key, s: (Math.random() * 4294967295) >>> 0 };
-    if (page.brush === 'stamp') meta.sh = P.shape;
+    var tool = page.studio ? P.tool : page.brush;
+    var meta = { b: tool, c: P.color.key, s: (Math.random() * 4294967295) >>> 0 };
+    if (tool === 'stamp') meta.sh = P.shape;
+    if (page.studio) {
+      if (P.size !== 'm') meta.z = Mal.SIZES[P.size];
+      if (P.shade && tool !== 'eraser') meta.v = P.shade;
+      if (tool === 'bucket') meta.m = B.findFill(S, q[0], q[1]);
+    }
     page.strokes.push(meta);
     var st = B.stroke(meta);
+    st.sid = sid;
     var p = B.point(S, q[0], q[1]);
-    brush().begin(S, st, p);
+    brush(tool).begin(S, st, p);
     record(sid, q);
-    active[e.pointerId] = { sid: sid, st: st, last: p, lq: q, cx: e.clientX, cy: e.clientY };
-    if (page.brush !== 'stamp') count(st, 5); // stamps are counted per stamp in after()
-    if (page.brush !== 'stamp') A.startTone(e.pointerId, st.freq);
+    active[e.pointerId] = { sid: sid, st: st, tool: tool, last: p, lq: q, cx: e.clientX, cy: e.clientY };
+    if (tool === 'bucket') count(st, 150);
+    else if (!SILENT[tool]) count(st, 5); // stamps are counted per stamp in after()
+    if (!SILENT[tool]) A.startTone(e.pointerId, st.freq);
     after(e.pointerId, st);
     Mal.emit('look', { x: e.clientX, y: e.clientY });
     Mal.emit('strokeStart', st);
@@ -175,7 +193,7 @@
 
   canvas.addEventListener('pointermove', function (e) {
     var a = active[e.pointerId];
-    if (!a) return;
+    if (!a || a.tool === 'bucket') return;
     e.preventDefault();
     var list = (typeof e.getCoalescedEvents === 'function') ? e.getCoalescedEvents() : null;
     if (!list || !list.length) list = [e];
@@ -188,11 +206,11 @@
       a.cy = ev.clientY;
       var q = quant(ev);
       var p = B.point(S, q[0], q[1]);
-      brush().move(S, a.st, a.last, p);
+      brush(a.tool).move(S, a.st, a.last, p);
       record(a.sid, q);
       a.last = p;
       a.lq = q;
-      count(a.st, page.brush === 'stamp' ? 0 : Math.sqrt(d2));
+      count(a.st, a.tool === 'stamp' ? 0 : Math.sqrt(d2));
     }
     Mal.emit('input');
     after(e.pointerId, a.st);
@@ -208,6 +226,28 @@
   canvas.addEventListener('pointerup', function (e) { endStroke(e.pointerId); });
   canvas.addEventListener('pointercancel', function (e) { endStroke(e.pointerId); });
   P.endAll = function () { Object.keys(active).forEach(endStroke); };
+
+  // one step back: drop the newest stroke and paint the page again from the recording
+  P.canUndo = function () { return !!page && page.strokes.length > 0 && !page.full && !Object.keys(active).length; };
+  P.undo = function () {
+    if (!P.canUndo()) return false;
+    var sid = page.strokes.length - 1, kept = [];
+    page.strokes.pop();
+    for (var i = 0; i < page.ev.length; i += 3) {
+      if (page.ev[i] !== sid) kept.push(page.ev[i], page.ev[i + 1], page.ev[i + 2]);
+    }
+    page.ev = kept;
+    var t = tally[sid] || {};
+    Object.keys(t).forEach(function (k) {
+      page.colors[k] -= t[k];
+      if (page.colors[k] < 1) delete page.colors[k];
+    });
+    if (!page.strokes.length) page.colors = {};
+    tally.length = sid;
+    B.renderAll(S, page);
+    Mal.emit('undo');
+    return true;
+  };
   P.activeCount = function () { return Object.keys(active).length; };
 
   /* ============================================================

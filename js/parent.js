@@ -225,6 +225,27 @@
     chs.appendChild(all);
     chs.appendChild(el('p', 'note', Mal.esc(Mal.t('chapterNote'))));
 
+    /* ---------- Malkasten: the free-painting tools grow ---------- */
+    var stu = section(Mal.t('secStudio'));
+    var lvl = Mal.story.studioLevel(), nextIn = Mal.story.studioNextIn();
+    stu.appendChild(el('p', 'big', Mal.esc(Mal.t('studioNow', { n: lvl, name: Mal.t('studio_' + lvl)[0] }))));
+    stu.appendChild(el('p', 'note', Mal.esc(S.studioLevel ? Mal.t('studioFixed') : nextIn < 0 ? Mal.t('studioMax')
+      : nextIn === 1 ? Mal.t('studioNext1') : Mal.t('studioNext', { d: nextIn }))));
+    chips(stu, Mal.t('studioLevel'), [{ v: 0, l: Mal.t('studioAuto') }].concat(Mal.STUDIO.map(function (id, i) {
+      return { v: i + 1, l: String(i + 1) };
+    })), S.studioLevel, function (v) { setS('studioLevel', v); Mal.emit('story'); });
+    if (!S.studioLevel) {
+      chips(stu, Mal.t('studioPace'), [2, 3, 5, 7].map(function (n) { return { v: n, l: Mal.t('paceDays', { n: n }) }; }),
+            S.studioPace, function (v) { setS('studioPace', v); Mal.emit('story'); });
+    }
+    var levels = el('ol', 'levels');
+    Mal.STUDIO.forEach(function (id, i) {
+      var t = Mal.t('studio_' + (i + 1));
+      levels.appendChild(el('li', i + 1 <= lvl ? 'on' : '', '<b>' + Mal.esc(t[0]) + '</b> – ' + Mal.esc(t[1])));
+    });
+    stu.appendChild(levels);
+    stu.appendChild(el('p', 'note', Mal.esc(Mal.t('studioNote'))));
+
     /* ---------- gallery ---------- */
     var gal = section(Mal.t('secGallery'));
     var countP = el('p', 'note', '…');

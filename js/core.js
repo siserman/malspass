@@ -170,7 +170,7 @@
      They unlock with calendar days ("sleeps"), never with play time.
      ============================================================ */
   Mal.CHAPTERS = [
-    { id: 'free',    brush: 'paint',   palette: 'all',   bg: Mal.PAPER },
+    { id: 'free',    brush: 'paint',   palette: 'all',   bg: Mal.PAPER, studio: true },
     { id: 'rainbow', brush: 'rainbow', palette: 'none',  bg: Mal.PAPER },
     { id: 'stamps',  brush: 'stamp',   palette: 'all',   bg: Mal.PAPER },
     { id: 'mirror',  brush: 'mirror',  palette: 'all',   bg: Mal.PAPER },
@@ -182,12 +182,29 @@
     return Mal.CHAPTERS[0];
   };
   Mal.PALETTES = {
+    basic: ['red', 'yellow', 'blue', 'green', 'black', 'white'],
     all:   ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'black', 'white'],
     night: ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'white'],
     mix:   ['red', 'yellow', 'blue', 'white'],
     none:  []
   };
   Mal.SHAPES = ['circle', 'square', 'triangle', 'star', 'heart', 'flower'];
+
+  /* ============================================================
+     MALKASTEN — free painting grows one tool at a time (one new idea
+     per level). Levels come with calendar days like the chapters,
+     start and stop at an age-appropriate point, and grown-ups can set
+     them directly.
+     ============================================================ */
+  Mal.STUDIO = ['basic', 'colors', 'sizes', 'eraser', 'brushes', 'bucket', 'shades'];
+  Mal.AGE_STUDIO = { '2': [1, 3], '3-4': [2, 6], '5-6': [3, 7] }; // [first level, highest level]
+  Mal.studioHas = function (level, what) { return level >= Mal.STUDIO.indexOf(what) + 1; };
+  Mal.BRUSH_TYPES = ['paint', 'crayon', 'water', 'marker'];
+  Mal.SIZES = { s: 10, m: 26, l: 48 };   // brush widths in CSS px
+  // light / normal / dark version of a color
+  Mal.shade = function (hex, v) {
+    return v > 0 ? Mal.mixHex(hex, '#ffffff', 0.45) : (v < 0 ? Mal.mixHex(hex, '#000000', 0.38) : hex);
+  };
 
   /* ============================================================
      SETTINGS (grown-ups) — defaults follow the German S2k guideline:
@@ -200,7 +217,7 @@
   };
   var DEFAULTS = {
     age: '3-4', sessionMin: 15, dailyMin: 30, breakMin: 60, bedtime: '18:30', wake: '07:00',
-    restDays: [], pace: 2, sun: true, tones: true, voice: true
+    restDays: [], pace: 2, studioLevel: 0, studioPace: 3, sun: true, tones: true, voice: true
   };
   Mal.settings = (function () {
     var saved = Mal.store.get('settings', {}) || {};
@@ -368,6 +385,34 @@
   Mal.icon = function (name) {
     var s = ICONS[name] || '';
     return s.indexOf('{u}') < 0 ? s : s.split('{u}').join('i' + (++iconUid));
+  };
+
+  // studio tool icons, tinted with the current color
+  Mal.toolIcon = function (name, hex) {
+    var c = hex || '#1e88e5';
+    var edge = Mal.luma(c) > 0.85 ? ' stroke="#b0b0b0" stroke-width="1.5"' : '';
+    var f = ' fill="' + c + '"' + edge;
+    switch (name) {
+      case 'paint':  return '<svg viewBox="0 0 48 48"><path d="M24 11c7 0 13 5 13 12 0 8-6 14-13 14S10 31 11 23c1-7 6-12 13-12z"' + f + '/>' +
+                            '<circle cx="39" cy="11" r="4"' + f + '/><circle cx="9" cy="10" r="3"' + f + '/><circle cx="41" cy="38" r="3"' + f + '/></svg>';
+      case 'crayon': return '<svg viewBox="0 0 48 48"><g transform="rotate(45 24 24)"><path d="M18 14L24 2 30 14Z"' + f + '/>' +
+                            '<rect x="18" y="13" width="12" height="31" rx="2"' + f + '/><rect x="18" y="22" width="12" height="13" fill="#fff" opacity=".6"/></g></svg>';
+      case 'water':  return '<svg viewBox="0 0 48 48"><circle cx="15" cy="36" r="10"' + f + ' opacity=".35"/><g transform="rotate(40 24 24)">' +
+                            '<rect x="21" y="1" width="6" height="22" rx="3" fill="#a1887f"/><rect x="20" y="21" width="8" height="5" fill="#b0bec5"/>' +
+                            '<path d="M20 26h8l-1 9q-3 6-6 0z"' + f + '/></g></svg>';
+      case 'marker': return '<svg viewBox="0 0 48 48"><g transform="rotate(45 24 24)"><rect x="19" y="5" width="10" height="27" rx="3" fill="#eceff1" stroke="#90a4ae" stroke-width="1.5"/>' +
+                            '<rect x="19" y="5" width="10" height="9" rx="3"' + f + '/><path d="M20 32h8l-2 7h-4z" fill="#90a4ae"/><path d="M22.5 39h3L24 45z"' + f + '/></g></svg>';
+      case 'eraser': return '<svg viewBox="0 0 48 48"><g transform="rotate(-30 24 24)"><rect x="7" y="16" width="34" height="17" rx="3" fill="#f8bbd0"/>' +
+                            '<rect x="7" y="16" width="13" height="17" rx="3" fill="#90caf9"/></g><circle cx="38" cy="40" r="1.6" fill="#f8bbd0"/><circle cx="33" cy="43" r="1.2" fill="#f8bbd0"/></svg>';
+      case 'bucket': return '<svg viewBox="0 0 48 48"><path d="M14 14q9-9 18 0" fill="none" stroke="#78909c" stroke-width="2.5"/><path d="M11 16h24l-3 25H14z" fill="#b0bec5"/>' +
+                            '<path d="M11 16q12 6 24 0" fill="none" stroke="#78909c" stroke-width="2"/><path d="M35 17q8 5 6 15q-1 5-3 1q0-8-5-12z"' + f + '/></svg>';
+      case 'undo':   return '<svg viewBox="0 0 48 48"><path d="M15 19h15a9.5 9.5 0 0 1 0 19H21" fill="none" stroke="#5f6b73" stroke-width="4.5" stroke-linecap="round"/>' +
+                            '<path d="M21 11l-8 8 8 8" fill="none" stroke="#5f6b73" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      case 'size_s': return '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="4"' + f + '/></svg>';
+      case 'size_m': return '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="9"' + f + '/></svg>';
+      case 'size_l': return '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"' + f + '/></svg>';
+      default:       return '';
+    }
   };
 
   // stamp shapes as SVG (the canvas versions live in brushes.js)

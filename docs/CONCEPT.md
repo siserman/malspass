@@ -10,6 +10,7 @@
 |---|---|
 | **Product** | A calm finger‑painting app for ages **3–6** (at 2 only together with a parent), German/English, with **Klecks**, a little drop of paint who paints with the child — and **ends each session himself**. |
 | **Levels** | **Chapters.** Each one brings one new tool and one idea (rainbow brush, shape stamps, magic mirror, glow night, real color mixing, …). They open with **calendar days — "noch zweimal schlafen"** — never with play time. Parents can open any chapter at any time. |
+| **Painting levels** | **The Malkasten (paint box).** Free painting itself grows in 7 levels, **one new tool at a time**: 6 colors → all 10 → thick & thin → eraser → crayon, watercolor, marker → paint bucket & undo → light & dark. Where it starts and stops depends on age; a new level comes every few days; Klecks introduces each one. |
 | **Story** | Klecks fell out of the paint pot onto a big, empty page. Every picture the child paints becomes part of Klecks' world: each chapter bubble on the home screen shows the child's own latest painting. At the end of a session Klecks goes to sleep in the paint pot. |
 | **Healthy use by design** | Sun clock, "one last picture", goodnight ritual, break between sessions, daily budget, bedtime, optional rest days. No streaks, notifications, rewards, ads, purchases or data. |
 | **Pedagogy** | Process over product · describe, don't judge · no rewards for painting · chapters follow how children's drawing develops · bilingual vocabulary · every chapter ends with an offline idea · built for painting together. |
@@ -127,6 +128,31 @@ My recommendation is Klecks.
 
 **Later seasons:** a Jahreszeiten (seasons) pack, a home‑language pack, and a Kita edition.
 
+### The Malkasten — the painting itself grows
+
+Chapters bring new *ideas*. The **Malkasten** (paint box) makes the *painting itself* richer: free painting starts simple and gains one tool per level. Klecks introduces each new tool once ("Mein Malkasten ist größer geworden!"), and its button glows until the child has tried it.
+
+| Level | What's new | What the child practices |
+|---|---|---|
+| 1 Fingerfarben | 6 colors (red, yellow, blue, green, black, white), one round brush | big arm movements, cause and effect; few choices for the youngest |
+| 2 Alle Farben | all 10 colors | color words, favorite colors, choosing |
+| 3 Dick & dünn | 3 brush widths | controlling a line, fine motor skills, big and small shapes |
+| 4 Radiergummi | eraser | taking something away and painting it again: revising an idea |
+| 5 Pinsel‑Kiste | crayon (grainy wax), watercolor (layers glaze and mix), marker (thin, crisp) | different materials make different marks |
+| 6 Farbeimer & Zurück | paint bucket (fills a closed shape) and one step back | closed shapes, figure and ground, planning |
+| 7 Hell & dunkel | a lighter and a darker version of every color | tints and shades, light and shadow |
+
+**Start and end by age:** 2 years: level 1, up to 3 · 3–4 years: level 2, up to 6 · 5–6 years: level 3, up to 7.
+
+**Rules:**
+- **One new tool at a time.** Children never meet a toolbar full of icons. Each level adds one idea, like Montessori's "isolation of difficulty" and the progressive disclosure UX research recommends for young children.
+- **Calendar, not play time.** By default a new level arrives every 3 days (parents can choose 2, 3, 5 or 7). Painting more never unlocks anything. There are no stars and no "level up!" fanfare, because rewarding children for drawing lowers their later interest (Lepper et al., 1973).
+- **Grown‑ups decide.** Parents can set any level directly: higher for a child who is ready, lower for one who is overwhelmed. A level a parent sets stays fixed.
+- **The same picture data as everywhere else.** Brush width, shade and the exact paint‑bucket area are stored with each stroke, so the time‑lapse, undo and the fridge show exactly what was painted.
+- **Talking about the process.** After the time‑lapse on the fridge, Klecks asks: "Erzähl mal: Wie hast du das gemalt?"
+
+**What it deliberately doesn't do:** no coloring‑in pages and no "correct" result. No layers, selection or text tools: those belong to adult apps. Undo arrives late (level 6) and only one step at a time. Process‑art educators worry that unlimited undo teaches children that a mark is a mistake to remove; the eraser comes first because it is a painting action you can see.
+
 ## 6. Healthy use — designed in, not bolted on
 
 ### The problems parents actually have
@@ -188,6 +214,30 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 - **Language.** Color and shape words in German and English today. Later: home languages (Turkish, Arabic, Ukrainian, Polish, Russian …) and **parents recording their own voice** for color names, with recordings stored only on the device.
 - **Discovering, not being taught.** In the Farbenküche nobody explains that red + yellow = orange. The child makes orange, and Klecks is surprised with them.
 - **Measuring learning without data.** Parent observation and playtests. The app never tests the child.
+
+### Official early‑years guidelines, and how the Malkasten follows them
+
+There is no single official rulebook for painting apps, but the early‑years frameworks agree on what art education for 2–6‑year‑olds is about. Children explore materials and tools freely, discover color and color mixing, revise their ideas, and talk about how they made something. The Malkasten turns that into an order of tools.
+
+| Guideline | What it says | In Malspaß |
+|---|---|---|
+| **England — EYFS** *Development Matters* (DfE, revised 2023), birth to three | "Explore paint, using fingers and other parts of their bodies as well as brushes and other tools." | Level 1: finger paint, one big brush, six colors |
+| same, 3‑ and 4‑year‑olds | "Explore colour and colour‑mixing." | the Farbenküche chapter; watercolor glazes mix (level 5); light and dark (level 7) |
+| same, 3‑ and 4‑year‑olds | "Create closed shapes with continuous lines, and begin to use these shapes to represent objects." | the paint bucket (level 6) fills exactly those closed shapes |
+| same, 3‑ and 4‑year‑olds | "Explore different materials freely, in order to develop their ideas about how to use them and what to make." | the Pinsel‑Kiste (level 5): crayon, watercolor, marker, with no task attached |
+| same, reception | "Explore, use and refine a variety of artistic effects…" · "Return to and build on their previous learning, refining ideas…" | eraser (level 4) and one step back (level 6); every level keeps all earlier tools |
+| **EYFS statutory framework**, Early Learning Goal *Creating with Materials* | "Safely use and explore a variety of materials, tools and techniques, experimenting with colour, design, texture, form and function" · "Share their creations, explaining the process they have used" | the seven levels as a whole · the time‑lapse, then Klecks: "Erzähl mal: Wie hast du das gemalt?" |
+| **USA — National Core Arts Standards**, Visual Arts (2014), Pre‑K | Cr1.1 "Engage in self‑directed play with materials." · Cr2.1 "Use a variety of art‑making tools." | free painting has no goals; tools arrive level by level |
+| same, Kindergarten | Cr2.1 "Through experimentation, build skills in various media and approaches to art‑making." · Cr3.1 "Explain the process of making art while creating." | levels 3–7 · "Erzähl mal" |
+| same, Pre‑K | Pr4.1 "Identify reasons for saving and displaying objects, artifacts, and artwork." · Re9.1 "Select a preferred artwork." | the fridge · the child's own star on a favorite picture |
+| **Bavaria — BayBEP** (11th edition 2024), chapter 7.8 *Ästhetik, Kunst und Kultur*\* | „Grundverständnis über Farben und die Möglichkeiten, diese zu mischen, erwerben" · „Mit verschiedenen Materialien, Techniken als Ausdrucksmöglichkeiten umgehen können" · „Eigene Gestaltungs‑ und Ausdruckswege entdecken" | Farbenküche and watercolor · Pinsel‑Kiste, eraser, bucket · open painting, no templates |
+| **Bavaria — LehrplanPLUS** primary school, art, years 1/2\* | „Farbeigenschaften (leuchtend – trüb, hell – dunkel)"; shades are made „experimentell … (z. B. Aufhellen und Abdunkeln)" | light and dark comes last (level 7), and only for 5–6‑year‑olds |
+| **NAEYC** *Developmentally Appropriate Practice* (2020), principle 8 | "Development and learning advance when children are challenged to achieve at a level just beyond their current mastery and when they have many opportunities to reflect on and practice newly acquired skills." | one new tool every few days, with days in between to practice |
+| **Montessori**, isolation of difficulty (AMI glossary)\* | difficult steps are "isolated and taught to the child separately… A task should neither be so hard that it is overwhelming, nor so easy that it is boring." | one new tool per level, introduced by Klecks, glowing until tried |
+| **Lowenfeld & Brittain**, *Creative and Mental Growth* (8th ed., 1987) | scribbling stage about 2–4, pre‑schematic about 4–7; at this age color is chosen for feeling, not realism | the levels start with big movements; Klecks never calls a color "wrong" |
+| **Touch research** (Nielsen Norman Group; Vatavu et al. 2015; Sesame Workshop 2012)\* | touch targets of at least 2 × 2 cm for ages 3–5; 3‑year‑olds' taps land about 4.5 mm off target; preschoolers rest their wrists on the bottom edge | the tool buttons are as large as seven of them next to the picture allow: about 1.4 cm on a standard iPad, still short of 2 cm. The palette sits at the bottom edge. Playtests should check both: do 3‑year‑olds hit the tools, and do resting wrists change the color by accident? |
+
+\* Rows marked with an asterisk were checked against secondary sources only (the original documents couldn't be opened from here). The other quotes were found word for word in several independent copies. Check every quote against the current edition before using it in marketing or in the store listing.
 
 ## 8. Saving paintings — the fridge
 
@@ -314,16 +364,21 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 6. **Voice:** a voice actor or licensed TTS? What should Klecks sound like — a child's voice or a warm adult voice?
 7. **Tech:** Capacitor *(recommended)* or a rewrite?
 8. **Chapter pace:** every 2 days *(recommended)*?
+9. **Malkasten pace:** a new level every 3 days, independent of the chapters *(recommended)*, or one level per chapter?
+10. **Malkasten by age:** is "up to level 3 / 6 / 7" right for 2 / 3–4 / 5–6? For example, should 3–4‑year‑olds also get light and dark?
+11. **Undo:** late and one step at a time *(recommended)*, or no undo at all (the pure process‑art view)?
+12. **Brushes in the Pinsel‑Kiste:** crayon, watercolor and marker *(prototype)*, or chalk, glitter or a sponge?
 
 ## 15. The prototype on this branch
 
-**Try it:** serve the folder (e.g. `python3 -m http.server`) or publish it with GitHub Pages, open it on the iPad and "Add to Home Screen". To see everything without waiting days, switch on the **Testmodus** at the bottom of the parents' area (lock at the top right → hold 2 s → answer the gate). It has day travel, every chapter and scene, a ×10/×60 clock and every voice line.
+**Try it:** serve the folder (e.g. `python3 -m http.server`) or publish it with GitHub Pages, open it on the iPad and "Add to Home Screen". To see everything without waiting days, switch on the **Testmodus** at the bottom of the parents' area (lock at the top right → hold 2 s → answer the gate). It has day travel, every chapter and scene, a ×10/×60 clock and every voice line. Malkasten levels can be picked directly in the parents' area under **Malkasten** (level chips 1–7, or *Automatisch* plus day travel to see them arrive one by one).
 
 **What's in it:**
 - the first start for parents;
 - Klecks and his hello;
 - the home screen that fills with the child's art;
 - 6 chapters with calendar unlocking and moons;
+- the Malkasten: 7 levels of free painting with Klecks' introductions, a glowing new tool, age start and end, and a parents' setting;
 - the sun clock, sleepy warning, "one last picture", goodnight ritual and sleep screen with an offline idea;
 - break, daily budget, bedtime and rest days;
 - the parental gate and parents' area;
@@ -348,7 +403,12 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 - Radesky et al. (2023), *Longitudinal Associations Between Use of Mobile Devices for Calming and Emotional Reactivity…*, JAMA Pediatr 177(1)
 - Lepper, Greene, Nisbett (1973), *Undermining children's intrinsic interest with extrinsic reward*, JPSP 28(1)
 - Hirsh‑Pasek et al. (2015), *Putting Education in "Educational" Apps*, Psychological Science in the Public Interest 16(1)
-- Kellogg (1969), *Analyzing Children's Art* · Lowenfeld (1947), *Creative and Mental Growth*
+- Kellogg (1969), *Analyzing Children's Art* · Lowenfeld (1947), *Creative and Mental Growth*; Lowenfeld & Brittain (1987), 8th ed.
+- DfE (2023), *Development Matters: Non‑statutory curriculum guidance for the early years foundation stage* — gov.uk/government/publications/development-matters--2 · DfE, *Statutory framework for the early years foundation stage* (Early Learning Goals unchanged since 2021) — gov.uk/government/publications/early-years-foundation-stage-framework--2
+- National Coalition for Core Arts Standards (2014), *National Core Arts Standards: Visual Arts* — nationalartsstandards.org
+- Bayerisches Staatsministerium für Familie, Arbeit und Soziales & Staatsinstitut für Frühpädagogik (IFP), *Der Bayerische Bildungs‑ und Erziehungsplan für Kinder in Tageseinrichtungen bis zur Einschulung*, 11th ed. (2024), ch. 7.8 — ifp.bayern · ISB, *LehrplanPLUS Grundschule, Kunst* — lehrplanplus.bayern.de
+- NAEYC (2020), *Developmentally Appropriate Practice* position statement, principles 8–9 · AMI, *Glossary of Montessori terms*, "Isolation of a difficulty"
+- Vatavu, Cramariuc, Schipor (2015), *Touch interaction for children aged 3 to 6 years*, Int. J. Human‑Computer Studies 74 · Nielsen Norman Group, *Children's UX: physical development* · Sesame Workshop (2012), *Best practices: designing touch tablet experiences for preschoolers*
 - Gossett & Chen (2004), *Paint Inspired Color Compositing* (the RYB mixing model)
 - Apple App Review Guidelines 1.3 & 5.1.4; Apple Kids apps guidance · Google Play Families policy · FTC COPPA Rule amendments (Federal Register, 22 April 2025)
 - Piper voice model cards (rhasspy/piper-samples); ElevenLabs licensing help center

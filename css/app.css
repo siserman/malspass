@@ -108,6 +108,43 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 #paintUI > * { pointer-events: auto; }
 #paintUI #mirrorAxis { pointer-events: none; }
 
+/* ---------- Malkasten tool bars (free painting) ----------
+   Young children need big targets (NN/g: ~2 cm for ages 3–5), so the buttons
+   take as much of the band between the corner buttons and the palette as 7
+   tools allow, with small gaps (a tap in a gap is lost) */
+.sidebar {
+  --tb: clamp(44px, min(9.2vmin, calc((100vh - 2 * var(--btn) - 150px) / 7)), 76px);
+  position: absolute; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; flex-wrap: wrap; align-content: center;
+  gap: 0.6vmin;
+  max-height: calc(100% - 2 * var(--btn) - 90px);
+  padding: 0.8vmin;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+  z-index: 11;
+}
+.sidebar:empty { display: none; }
+.sidebar .grp { display: flex; flex-direction: column; gap: inherit; }
+.sidebar.left { left: calc(8px + var(--safe-l)); }
+.sidebar.right { right: calc(8px + var(--safe-r)); }
+.tbtn {
+  width: var(--tb); height: var(--tb);
+  border-radius: 16px;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+.tbtn svg { width: 82%; height: 82%; pointer-events: none; }
+.tbtn.selected { transform: scale(1.08); box-shadow: 0 0 0 3px #333; }
+.tbtn.off { opacity: 0.35; }
+.tbtn.new, .swatch.new { animation: glow 1.4s ease-in-out infinite; }
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(253, 216, 53, 0); }
+  50% { box-shadow: 0 0 0 7px rgba(253, 216, 53, 0.95); }
+}
+
 #dock {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -587,6 +624,9 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 .chap .nm { flex: 1; font-weight: 700; line-height: 1.25; }
 .chap .st { font-weight: 400; font-size: 13px; color: var(--ink-soft); }
 .why p { margin: 9px 0; font-size: 14.5px; line-height: 1.5; }
+.levels { margin: 12px 0 0 22px; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.levels li { margin: 5px 0; }
+.levels li.on { color: var(--ink); }
 
 #firstrun { z-index: 65; background: var(--paper); justify-content: center; }
 .first-card {
@@ -653,6 +693,7 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 @keyframes zzz { 0% { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-12px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .bubble.new::after, #sleep.night .stars i, .k-zzz path { animation: none; }
+  .bubble.new::after, #sleep.night .stars i, .k-zzz path, .tbtn.new, .swatch.new { animation: none; }
+  .tbtn.new, .swatch.new { box-shadow: 0 0 0 6px rgba(253, 216, 53, 0.95); }
   .k-zzz path { opacity: 0.8; }
 }

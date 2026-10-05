@@ -40,12 +40,13 @@
     c.fillRect(0, 0, S.W, S.H);
     if (S.grid) { resetGrid(S.grid); B.renderGrid(S); }
   };
-  // per-stroke state; `meta` is what gets saved: {b: brush, c: color key, s: seed, sh: shape}
+  // per-stroke state; `meta` is what gets saved:
+  // {b: brush, c: color key, s: seed, sh: shape, z: width (CSS px), v: shade -1/0/+1, m: fill mask}
   B.stroke = function (meta) {
     var col = Mal.color(meta.c) || Mal.color('blue');
     return {
-      key: col.key, hex: col.hex, freq: col.freq, shape: meta.sh || 'star',
-      rng: Mal.rng(meta.s || 1), dist: 0, acc: 0, carry: 0, spark: 0, blip: false, cell: -1
+      meta: meta, key: col.key, hex: Mal.shade(col.hex, meta.v || 0), freq: col.freq, shape: meta.sh || 'star',
+      size: meta.z || SIZE, rng: Mal.rng(meta.s || 1), dist: 0, acc: 0, carry: 0, spark: 0, blip: false, cell: -1
     };
   };
 
@@ -88,8 +89,8 @@
      PAINT — the classic round finger brush
      ============================================================ */
   B.paint = {
-    begin: function (S, st, p) { dot(S, p, SIZE * S.k / 2, st.hex); },
-    move:  function (S, st, a, b) { seg(S, a, b, SIZE * S.k, st.hex); }
+    begin: function (S, st, p) { dot(S, p, st.size * S.k / 2, st.hex); },
+    move:  function (S, st, a, b) { seg(S, a, b, st.size * S.k, st.hex); }
   };
 
   /* ============================================================
@@ -99,6 +100,156 @@
   B.mirror = {
     begin: function (S, st, p) { B.paint.begin(S, st, p); B.paint.begin(S, st, mirrored(S, p)); },
     move:  function (S, st, a, b) { B.paint.move(S, st, a, b); B.paint.move(S, st, mirrored(S, a), mirrored(S, b)); }
+  };
+
+  /* ============================================================
+     MALKASTEN BRUSHES — crayon, watercolor, marker, eraser and the
+     paint bucket. Width (z) and light/dark shade (v) come from meta.
+     ============================================================ */
+
+  // Wachsmalstift: grainy wax — small seeded flecks across the stroke width
+  var CRAYON_GAP = 1.6;
+  function crayonDab(S, st, p, dx, dy) {
+    var c = S.ctx, w = st.size * S.k, n = Math.max(3, Math.round(st.size / 3));
+    var grain = Math.max(1, st.size / 26) * S.k;
+    c.fillStyle = st.hex;
+    for (var i = 0; i < n; i++) {
+      var off = (st.rng() - 0.5) * w * 0.95;
+      var along = (st.rng() - 0.5) * 2 * S.k;
+      var sz = (0.8 + st.rng() * 1.6) * grain;
+      c.globalAlpha = 0.45 + st.rng() * 0.5;
+      c.fillRect(p.x - dy * off + dx * along - sz / 2, p.y + dx * off + dy * along - sz / 2, sz, sz);
+    }
+    c.globalAlpha = 1;
+  }
+  B.crayon = {
+    begin: function (S, st, p) {
+      st.carry = 0;
+      for (var k = 0; k < 4; k++) crayonDab(S, st, p, Math.cos(k * 0.785), Math.sin(k * 0.785));
+    },
+    move: function (S, st, a, b) {
+      var len = cssDist(a, b);
+      if (len <= 0) return;
+      var dx = (b.cx - a.cx) / len, dy = (b.cy - a.cy) / len;
+      along(st, a, b, CRAYON_GAP, function (q) { crayonDab(S, st, q, dx, dy); });
+    }
+  };
+
+  // Wasserfarbe: soft translucent glaze; layers darken and mix like real watercolor
+  var WATER_GAP = 2.5;
+  var waterSprites = {};
+  function waterSprite(hex, rad) {
+    var key = hex + '|' + Math.round(rad);
+    if (waterSprites[key]) return waterSprites[key];
+    var n = Math.max(2, Math.ceil(rad * 2));
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = n;
+    var g = cv.getContext('2d');
+    var rgb = Mal.hexToRgb(hex).join(',');
+    var grd = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+    grd.addColorStop(0, 'rgba(' + rgb + ',0.11)');
+    grd.addColorStop(0.65, 'rgba(' + rgb + ',0.08)');
+    grd.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, n, n);
+    waterSprites[key] = cv;
+    return cv;
+  }
+  function waterDab(S, st, p) {
+    var base = st.size * 0.62 * S.k;
+    var r = base * (0.9 + st.rng() * 0.2);
+    var c = S.ctx;
+    // white paint can't darken anything, so it is laid on top instead
+    c.globalCompositeOperation = Mal.luma(st.hex) > 0.9 ? 'source-over' : 'multiply';
+    c.drawImage(waterSprite(st.hex, base), p.x - r, p.y - r, r * 2, r * 2);
+    c.globalCompositeOperation = 'source-over';
+  }
+  B.water = {
+    begin: function (S, st, p) { st.carry = 0; waterDab(S, st, p); },
+    move:  function (S, st, a, b) { along(st, a, b, WATER_GAP, function (q) { waterDab(S, st, q); }); }
+  };
+
+  // Filzstift: thin and crisp
+  B.marker = {
+    begin: function (S, st, p) { dot(S, p, st.size * 0.45 * S.k / 2, st.hex); },
+    move:  function (S, st, a, b) { seg(S, a, b, st.size * 0.45 * S.k, st.hex); }
+  };
+
+  // Radiergummi: paints the paper back
+  B.eraser = {
+    begin: function (S, st, p) { dot(S, p, st.size * 1.4 * S.k / 2, S.page.bg); },
+    move:  function (S, st, a, b) { seg(S, a, b, st.size * 1.4 * S.k, S.page.bg); }
+  };
+
+  // Farbeimer: the area is found once on the live page (B.findFill) and saved with
+  // the stroke as runs, so replays and undo paint exactly the same area
+  B.bucket = {
+    begin: function (S, st) {
+      var m = st.meta.m;
+      st.blip = true;
+      if (!m) return;
+      var cv = document.createElement('canvas');
+      cv.width = m.w;
+      cv.height = m.h;
+      var g = cv.getContext('2d');
+      g.fillStyle = st.hex;
+      for (var i = 0; i < m.r.length; i += 3) g.fillRect(m.r[i + 1], m.r[i], m.r[i + 2], 1);
+      S.ctx.imageSmoothingEnabled = true;
+      S.ctx.drawImage(cv, 0, 0, m.w, m.h, 0, 0, S.W, S.H);
+    },
+    move: function () {}
+  };
+  // flood fill on the page at CSS resolution → {w, h, r: [y, x, length, …]}
+  B.findFill = function (S, qx, qy) {
+    var w = Math.max(1, Math.round(S.page.w)), h = Math.max(1, Math.round(S.page.h));
+    var cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    var g = cv.getContext('2d');
+    g.drawImage(S.canvas, 0, 0, S.W, S.H, 0, 0, w, h);
+    var px = g.getImageData(0, 0, w, h).data;
+    var sx = Mal.clamp(Math.floor(qx / Q * w), 0, w - 1), sy = Mal.clamp(Math.floor(qy / Q * h), 0, h - 1);
+    var si = (sy * w + sx) * 4, r0 = px[si], g0 = px[si + 1], b0 = px[si + 2], TOL = 48;
+    var mask = new Uint8Array(w * h);
+    function like(i) {
+      var j = i * 4;
+      return !mask[i] && Math.abs(px[j] - r0) <= TOL && Math.abs(px[j + 1] - g0) <= TOL && Math.abs(px[j + 2] - b0) <= TOL;
+    }
+    var stack = [sx, sy], x0, x1, y, x;
+    function seedRow(yy) { // one seed per run of fillable pixels in the row above/below
+      if (yy < 0 || yy >= h) return;
+      var inRun = false;
+      for (var xx = x0; xx <= x1; xx++) {
+        var ok = like(yy * w + xx);
+        if (ok && !inRun) stack.push(xx, yy);
+        inRun = ok;
+      }
+    }
+    while (stack.length) {
+      y = stack.pop();
+      x = stack.pop();
+      if (!like(y * w + x)) continue;
+      x0 = x;
+      x1 = x;
+      while (x0 > 0 && like(y * w + x0 - 1)) x0--;
+      while (x1 < w - 1 && like(y * w + x1 + 1)) x1++;
+      for (var k = x0; k <= x1; k++) mask[y * w + k] = 1;
+      seedRow(y - 1);
+      seedRow(y + 1);
+    }
+    // grow by one pixel so the paint tucks under soft (anti-aliased) outlines, then encode as runs
+    var runs = [];
+    for (y = 0; y < h; y++) {
+      var start = -1;
+      for (x = 0; x <= w; x++) {
+        var i = y * w + x;
+        var on = x < w && (mask[i] || (x > 0 && mask[i - 1]) || (x < w - 1 && mask[i + 1]) ||
+                           (y > 0 && mask[i - w]) || (y < h - 1 && mask[i + w]));
+        if (on && start < 0) start = x;
+        else if (!on && start >= 0) { runs.push(y, start, x - start); start = -1; }
+      }
+    }
+    return { w: w, h: h, r: runs };
   };
 
   /* ============================================================

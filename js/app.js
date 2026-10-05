@@ -45,7 +45,45 @@
     Mal.emit('story');
   };
   story.relock = function () { Mal.store.remove('allOpen'); Mal.store.remove('unlocked'); Mal.emit('story'); };
-  story.resetIntros = function () { Mal.store.remove('seen'); Mal.store.remove('announced'); Mal.emit('story'); };
+  story.resetIntros = function () {
+    Mal.store.remove('seen');
+    Mal.store.remove('announced');
+    Mal.store.remove('studioSeen');
+    markStudioSeen(studioStart());
+    Mal.emit('story');
+  };
+
+  /* ---------- Malkasten: free painting grows one tool per level ---------- */
+  function studioRange() { return Mal.AGE_STUDIO[Mal.settings.age] || [2, 6]; }
+  function studioStart() { return studioRange()[0]; }
+  // grown-ups can fix the level; otherwise it grows with the days from an age-appropriate start
+  story.studioLevel = function () {
+    var S = Mal.settings;
+    if (S.studioLevel) return Mal.clamp(S.studioLevel, 1, Mal.STUDIO.length);
+    var r = studioRange();
+    return Math.min(r[1], r[0] + Math.floor(story.day() / Math.max(1, S.studioPace)));
+  };
+  // days until the next level comes by itself (-1: fixed by grown-ups or highest level for this age)
+  story.studioNextIn = function () {
+    var S = Mal.settings, pace = Math.max(1, S.studioPace);
+    if (S.studioLevel || story.studioLevel() >= studioRange()[1]) return -1;
+    return pace - (story.day() % pace);
+  };
+  // the lowest level not introduced yet — Klecks shows one new tool per visit
+  story.studioIntro = function () {
+    var lvl = story.studioLevel(), seen = Mal.store.get('studioSeen', {});
+    for (var i = 2; i <= lvl; i++) if (!seen[i]) return i;
+    return 0;
+  };
+  function markStudioSeen(upTo) {
+    var seen = Mal.store.get('studioSeen', {});
+    for (var i = 1; i <= upTo; i++) seen[i] = true;
+    Mal.store.set('studioSeen', seen);
+  }
+  // what a child of this age starts with isn't "new": set once the grown-ups picked the age
+  // at first run (or on the first start of this version on an existing install)
+  story.studioBaseline = function () { markStudioSeen(studioStart()); Mal.store.set('studioInit', true); };
+  if (!Mal.store.get('studioInit', false) && Mal.store.get('installDay', null)) story.studioBaseline();
   // small persistent per-chapter flags: 'seen' (intro played), 'announced' (new-chapter hint given)
   function flag(name, id, set) {
     var f = Mal.store.get(name, {});
@@ -136,7 +174,8 @@
         var s = story.status(ch);
         if (!s.open && lockedShown) return; // only the very next surprise is visible
         var b = document.createElement('button');
-        b.className = 'bubble' + (s.open ? '' : ' locked') + (s.open && !flag('seen', ch.id) ? ' new' : '');
+        var fresh = s.open && (!flag('seen', ch.id) || (ch.studio && story.studioIntro()));
+        b.className = 'bubble' + (s.open ? '' : ' locked') + (fresh ? ' new' : '');
         var html = '<span class="face">';
         if (!s.open) html += Mal.icon('gift');
         else if (latest[ch.id]) html += '<img alt="" src="' + latest[ch.id] + '">';
@@ -196,6 +235,7 @@
 
   function goHome(save) {
     if (save && current === 'paintUI') saveCurrent(false);
+    newTools = null;
     show('home');
     renderHome();
   }
@@ -232,6 +272,16 @@
   function startChapter(ch) {
     var first = !flag('seen', ch.id);
     flag('seen', ch.id, true);
+    var lvl = !first && ch.studio ? story.studioIntro() : 0;
+    if (lvl) {
+      // a new tool in the paint box: Klecks introduces it, the button glows until it's tried
+      var seen = Mal.store.get('studioSeen', {});
+      seen[lvl] = true;
+      Mal.store.set('studioSeen', seen);
+      newTools = STUDIO_NEW[lvl - 1];
+      runIntro('st_' + Mal.STUDIO[lvl - 1], studioIcon(lvl), P.color.hex, false, function () { enterPaint(ch); });
+      return;
+    }
     runIntro(first ? 'ch_' + ch.id : 'letsGo', Mal.icon(ch.id),
              ch.brush === 'rainbow' ? 'rainbow' : P.color.hex, ch.brush === 'glow',
              function () { enterPaint(ch); });
@@ -243,11 +293,13 @@
   function enterPaint(ch) {
     chapter = ch;
     Mal.store.set('lastChapter', ch.id);
-    var keys = Mal.PALETTES[ch.palette];
+    if (ch.studio) fitStudioTools();
+    var keys = paletteKeys(ch);
     if (keys.length && keys.indexOf(P.color.key) < 0) P.color = Mal.color(keys.indexOf('blue') >= 0 ? 'blue' : keys[0]);
     P.newPage(ch);
     buildPalette(ch);
     buildTools(ch);
+    buildStudioBars();
     var ui = $('paintUI');
     ui.classList.toggle('mirror', ch.brush === 'mirror');
     ui.classList.toggle('night', ch.brush === 'glow');
@@ -255,8 +307,15 @@
     show('paintUI');
   }
 
+  // the color actually painted (Malkasten level 7 adds light and dark shades)
+  function paintHex() { return chapter.studio ? Mal.shade(P.color.hex, P.shade) : P.color.hex; }
+  function paletteKeys(ch) {
+    if (ch.studio) return Mal.PALETTES[Mal.studioHas(story.studioLevel(), 'colors') ? 'all' : 'basic'];
+    return Mal.PALETTES[ch.palette];
+  }
+
   function syncKlecksColor() {
-    var c = chapter.brush === 'rainbow' ? 'rainbow' : P.color.hex;
+    var c = chapter.brush === 'rainbow' ? 'rainbow' : paintHex();
     [kPaint, kHome, kSleep].forEach(function (k) { k.setColor(c); });
     kPaint.setGlow(chapter.brush === 'glow');
   }
@@ -264,13 +323,15 @@
   function buildPalette(ch) {
     var el = $('palette');
     el.innerHTML = '';
-    var keys = Mal.PALETTES[ch.palette];
+    var keys = paletteKeys(ch);
+    var isNew = ch.studio && newTools && newTools.indexOf('palette') >= 0;
     keys.forEach(function (key) {
       var c = Mal.color(key);
       var b = document.createElement('button');
-      b.className = 'swatch' + (key === P.color.key ? ' selected' : '');
+      b.className = 'swatch' + (key === P.color.key ? ' selected' : '') +
+                    (isNew && Mal.PALETTES.basic.indexOf(key) < 0 ? ' new' : '');
       b.dataset.key = key;
-      b.style.background = c.hex;
+      b.style.background = ch.studio ? Mal.shade(c.hex, P.shade) : c.hex;
       b.setAttribute('aria-label', c.de + ' / ' + c.en);
       // pointerdown (not click) → instant response for little fingers
       Mal.press(b, function () { selectColor(c); });
@@ -282,10 +343,15 @@
   function selectColor(c) {
     P.color = c;
     var sw = $('palette').children;
-    for (var i = 0; i < sw.length; i++) sw[i].classList.toggle('selected', sw[i].dataset.key === c.key);
+    for (var i = 0; i < sw.length; i++) {
+      sw[i].classList.toggle('selected', sw[i].dataset.key === c.key);
+      if (sw[i].dataset.key === c.key) sw[i].classList.remove('new');
+    }
+    if (P.tool === 'eraser') P.tool = lastBrush; // picking a color means painting again
     syncKlecksColor();
     kPaint.bounce();
     refreshTools();
+    refreshStudio();
     A.say(c.key);
     Mal.emit('input');
   }
@@ -317,6 +383,118 @@
       tools[i].classList.toggle('selected', tools[i].dataset.shape === P.shape);
     }
     $('tools').classList.toggle('on-white', P.color.key === 'white');
+  }
+
+  /* ---------- Malkasten tool bars (free painting) ---------- */
+  // which buttons glow after Klecks introduced level n
+  var STUDIO_NEW = [[], ['palette'], ['size'], ['eraser'], ['crayon', 'water', 'marker'], ['bucket', 'undo'], ['shade']];
+  var newTools = null, lastBrush = 'paint';
+
+  // keep tool, width and shade within what this level offers
+  function fitStudioTools() {
+    var lvl = story.studioLevel();
+    var tools = toolList(lvl);
+    if (tools.indexOf(P.tool) < 0) P.tool = 'paint';
+    if (Mal.BRUSH_TYPES.indexOf(lastBrush) < 0 || tools.indexOf(lastBrush) < 0) lastBrush = 'paint';
+    if (!Mal.studioHas(lvl, 'sizes')) P.size = 'm';
+    if (!Mal.studioHas(lvl, 'shades')) P.shade = 0;
+    if (Mal.PALETTES[Mal.studioHas(lvl, 'colors') ? 'all' : 'basic'].indexOf(P.color.key) < 0) P.color = Mal.color('blue');
+  }
+  function toolList(lvl) {
+    var t = Mal.studioHas(lvl, 'brushes') ? Mal.BRUSH_TYPES.slice() : (Mal.studioHas(lvl, 'eraser') ? ['paint'] : []);
+    if (Mal.studioHas(lvl, 'eraser')) t.push('eraser');
+    if (Mal.studioHas(lvl, 'bucket')) t.push('bucket');
+    return t;
+  }
+  function barButton(kind, value) {
+    var b = document.createElement('button');
+    b.className = 'tbtn';
+    b.dataset.kind = kind;
+    b.dataset.value = String(value);
+    var glow = kind === 'tool' ? value : kind;
+    if (newTools && newTools.indexOf(glow) >= 0) b.classList.add('new');
+    Mal.press(b, function () {
+      b.classList.remove('new');
+      Mal.emit('input');
+      if (kind === 'undo') {
+        if (P.undo()) { A.whoosh(); kPaint.bounce(); }
+        refreshStudio();
+        return;
+      }
+      if (kind === 'tool') {
+        P.tool = value;
+        if (Mal.BRUSH_TYPES.indexOf(value) >= 0) lastBrush = value;
+        A.say('tool_' + value);
+      } else if (kind === 'size') {
+        P.size = value;
+        A.say('size_' + value);
+      } else {
+        P.shade = value;
+        A.say(value > 0 ? 'shade_light' : (value < 0 ? 'shade_dark' : 'shade_normal'));
+        buildPalette(chapter);
+        syncKlecksColor();
+      }
+      kPaint.bounce();
+      refreshStudio();
+    });
+    return b;
+  }
+  // buttons that belong together stay together when a bar has to wrap (small landscape phones)
+  function addGroup(bar, buttons) {
+    if (!buttons.length) return;
+    var g = document.createElement('div');
+    g.className = 'grp';
+    buttons.forEach(function (b) { g.appendChild(b); });
+    bar.appendChild(g);
+  }
+  function buildStudioBars() {
+    var left = $('toolbar'), right = $('sizebar');
+    left.innerHTML = '';
+    right.innerHTML = '';
+    if (!chapter.studio) return;
+    var lvl = story.studioLevel(), tools = toolList(lvl);
+    var isBrush = function (t) { return Mal.BRUSH_TYPES.indexOf(t) >= 0; };
+    addGroup(left, tools.filter(isBrush).map(function (t) { return barButton('tool', t); }));
+    var more = tools.filter(function (t) { return !isBrush(t); }).map(function (t) { return barButton('tool', t); });
+    if (Mal.studioHas(lvl, 'bucket')) more.push(barButton('undo', 1));
+    addGroup(left, more);
+    if (Mal.studioHas(lvl, 'sizes')) addGroup(right, ['l', 'm', 's'].map(function (z) { return barButton('size', z); }));
+    if (Mal.studioHas(lvl, 'shades')) addGroup(right, [1, 0, -1].map(function (v) { return barButton('shade', v); }));
+    refreshStudio();
+  }
+  function refreshStudio() {
+    if (!chapter.studio) return;
+    var hex = paintHex();
+    var btns = document.querySelectorAll('#toolbar .tbtn, #sizebar .tbtn');
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i], kind = b.dataset.kind, v = b.dataset.value, on = false, icon;
+      if (kind === 'tool') { icon = Mal.toolIcon(v, hex); on = P.tool === v; }
+      else if (kind === 'size') { icon = Mal.toolIcon('size_' + v, hex); on = P.size === v; }
+      else if (kind === 'shade') {
+        var sh = Mal.shade(P.color.hex, +v);
+        icon = '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="15" fill="' + sh + '"' +
+               (Mal.luma(sh) > 0.85 ? ' stroke="#b0b0b0" stroke-width="1.5"' : '') + '/></svg>';
+        on = P.shade === +v;
+      } else { icon = Mal.toolIcon('undo'); b.classList.toggle('off', !P.canUndo()); }
+      if (b.dataset.icon !== icon) { b.innerHTML = icon; b.dataset.icon = icon; }
+      b.classList.toggle('selected', on);
+    }
+  }
+  Mal.on('strokeEnd', function () { if (current === 'paintUI') refreshStudio(); });
+  // the picture Klecks shows when introducing a new level
+  function studioIcon(lvl) {
+    var hex = P.color.hex;
+    switch (Mal.STUDIO[lvl - 1]) {
+      case 'colors': return '<svg viewBox="0 0 48 48"><circle cx="16" cy="16" r="9" fill="#fb8c00"/><circle cx="32" cy="16" r="9" fill="#8e24aa"/>' +
+                            '<circle cx="16" cy="32" r="9" fill="#f48fb1"/><circle cx="32" cy="32" r="9" fill="#795548"/></svg>';
+      case 'sizes':  return '<svg viewBox="0 0 48 48"><circle cx="9" cy="24" r="3.5" fill="' + hex + '"/><circle cx="20" cy="24" r="6" fill="' + hex + '"/>' +
+                            '<circle cx="35" cy="24" r="10" fill="' + hex + '"/></svg>';
+      case 'eraser': return Mal.toolIcon('eraser');
+      case 'brushes': return Mal.toolIcon('crayon', hex);
+      case 'bucket': return Mal.toolIcon('bucket', hex);
+      default:       return '<svg viewBox="0 0 48 48"><circle cx="12" cy="24" r="9" fill="' + Mal.shade(hex, 1) + '"/><circle cx="24" cy="24" r="9" fill="' + hex +
+                            '"/><circle cx="36" cy="24" r="9" fill="' + Mal.shade(hex, -1) + '"/></svg>';
+    }
   }
 
   Mal.press(kPaint.el, function () {
@@ -393,6 +571,7 @@
       }
     });
     P.newPage(chapter);
+    refreshStudio();
     flash();
     if (!had) A.say('clean');
     if (had && last) { hungLastPicture = true; T.endNow(); } // "one last picture" is done → time for bed
@@ -439,6 +618,7 @@
     Mal.gallery.closeViewer();
     var painting = current === 'paintUI';
     var saved = painting && P.hasContent();
+    newTools = null;
     if (painting) saveCurrent(true);
     P.enabled = false;
     P.endAll();
@@ -505,6 +685,7 @@
     firstRun: function () {
       show('home');
       Mal.parent.firstRun(function () {
+        story.studioBaseline();
         renderHome();
         runIntro('hello', '', '#1e88e5', false, function () { kHome.wave(); });
       });
@@ -561,6 +742,7 @@
     show('home');
     Mal.parent.firstRun(function () {
       Mal.store.set('installDay', Mal.dayKey());
+      story.studioBaseline();
       flag('announced', 'free', true);
       flag('announced', 'rainbow', true);
       renderHome();

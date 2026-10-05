@@ -17,8 +17,9 @@ It also runs straight from `index.html` (service worker and offline cache only w
 
 - **Parents' area:** press and hold the lock (top right) for 2 seconds, then tap the three numbers shown as words.
 - **Test mode:** at the bottom of the parents' area, switch *Testmodus* on. It lets you:
-  - jump through the days, so chapters open like in real life;
+  - jump through the days, so chapters and paint‑box levels open like in real life;
   - lock chapters again, or open any chapter right away;
+  - pick any Malkasten level directly (also outside test mode, under *Malkasten*);
   - play every scene: first start, hello, "something new", sleepy, goodnight, bedtime, daily limit, rest day, wake up;
   - run the clock ×10 or ×60, and show a timer on screen;
   - listen to every voice line.
@@ -28,6 +29,7 @@ It also runs straight from `index.html` (service worker and offline cache only w
 ## What's inside
 
 - **Six chapters:** free painting, rainbow brush, shape stamps, magic mirror, glow night, and a color kitchen where pigments really mix. They unlock with calendar days, not play time.
+- **The Malkasten (paint box):** free painting itself grows in seven levels, one new tool at a time: six colors → all colors → thick & thin → eraser → crayon, watercolor and marker → paint bucket & undo → light & dark shades. The start and the last level depend on the child's age, a new level comes every few days, and Klecks introduces each one. Parents can set the level directly.
 - **Sessions:** a sun clock, a sleepy "one last picture", a goodnight ritual and a sleep screen with an offline idea. Also a break between sessions, a daily maximum, bedtime and rest days.
 - **The fridge:** every picture is saved automatically (IndexedDB, on the device only) and can be replayed as an exact time‑lapse. Parents can mark favorites, save/share and delete.
 - **Sound:** spoken colors (recorded clips, device voice as fallback) and a pentatonic tone per finger that plays even with the iPhone's silent switch on.
