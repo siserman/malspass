@@ -229,7 +229,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 | **EYFS statutory framework**, Early Learning Goal *Creating with Materials* | "Safely use and explore a variety of materials, tools and techniques, experimenting with colour, design, texture, form and function" · "Share their creations, explaining the process they have used" | the seven levels as a whole · the time‑lapse, then Klecks: "Erzähl mal: Wie hast du das gemalt?" |
 | **USA — National Core Arts Standards**, Visual Arts (2014), Pre‑K | Cr1.1 "Engage in self‑directed play with materials." · Cr2.1 "Use a variety of art‑making tools." | free painting has no goals; tools arrive level by level |
 | same, Kindergarten | Cr2.1 "Through experimentation, build skills in various media and approaches to art‑making." · Cr3.1 "Explain the process of making art while creating." | levels 3–7 · "Erzähl mal" |
-| same, Pre‑K | Pr4.1 "Identify reasons for saving and displaying objects, artifacts, and artwork." · Re9.1 "Select a preferred artwork." | the fridge · the child's own star on a favorite picture |
+| same, Pre‑K | Pr4.1 "Identify reasons for saving and displaying objects, artifacts, and artwork." · Re9.1 "Select a preferred artwork." | the fridge · favorites: the child picks, a grown‑up sets the star |
 | **Bavaria — BayBEP** (11th edition 2024), chapter 7.8 *Ästhetik, Kunst und Kultur*\* | „Grundverständnis über Farben und die Möglichkeiten, diese zu mischen, erwerben" · „Mit verschiedenen Materialien, Techniken als Ausdrucksmöglichkeiten umgehen können" · „Eigene Gestaltungs‑ und Ausdruckswege entdecken" | Farbenküche and watercolor · Pinsel‑Kiste, eraser, bucket · open painting, no templates |
 | **Bavaria — LehrplanPLUS** primary school, art, years 1/2\* | „Farbeigenschaften (leuchtend – trüb, hell – dunkel)"; shades are made „experimentell … (z. B. Aufhellen und Abdunkeln)" | light and dark comes last (level 7), and only for 5–6‑year‑olds |
 | **NAEYC** *Developmentally Appropriate Practice* (2020), principle 8 | "Development and learning advance when children are challenged to achieve at a level just beyond their current mastery and when they have many opportunities to reflect on and practice newly acquired skills." | one new tool every few days, with days in between to practice |
@@ -363,9 +363,9 @@ There is no single official rulebook for painting apps, but the early‑years fr
 5. **Rest days:** off by default *(recommended)*, or 1–2 days suggested at first start?
 6. **Voice:** a voice actor or licensed TTS? What should Klecks sound like — a child's voice or a warm adult voice?
 7. **Tech:** Capacitor *(recommended)* or a rewrite?
-8. **Chapter pace:** every 2 days *(recommended)*?
 
 **Decided (October 2026):**
+- **Chapter pace:** a new chapter every 2 days.
 - **Malkasten pace:** a new level every 3 days, independent of the chapters.
 - **Undo:** stays late (level 6) and takes back only the last stroke.
 - **Pinsel‑Kiste:** crayon, watercolor and marker.
