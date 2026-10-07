@@ -132,6 +132,7 @@
   $('vClose').innerHTML = Mal.icon('close');
   $('vPlay').innerHTML = Mal.icon('play');
   $('vShare').innerHTML = Mal.icon('share');
+  $('vFilm').innerHTML = Mal.icon('film');
   $('vDel').innerHTML = Mal.RING + Mal.icon('trash');
   $('sleepPot').innerHTML = '<svg viewBox="0 0 200 110" aria-hidden="true"><path d="M18 20H182L168 98Q166 108 154 108H46Q34 108 32 98Z" fill="#5c6bc0"/>' +
     '<rect x="8" y="8" width="184" height="22" rx="11" fill="#7986cb"/><path d="M40 30q4 16 10 0M150 30q3 12 8 0" fill="#9fa8da"/>' +

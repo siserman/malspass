@@ -245,8 +245,10 @@ There is no single official rulebook for painting apps, but the early‑years fr
 - **The fridge** is a gallery that looks like a fridge door, with magnets. Kids can look and **watch a time‑lapse** of how their picture was made.
 - **Exact replay.** Every stroke is recorded compactly (16‑bit coordinates plus brush, color and seed) and every brush is deterministic. The prototype's tests show 0 % pixel difference between the live painting and the replay for all six brushes.
 - **Parents** can mark favorites, save or share (share sheet → Photos, print, messages) and delete. The newest 300 pictures and all favorites are kept.
+- **The time‑lapse as a film.** Next to *Sichern*, the **Film** button turns a picture's time‑lapse into a short video (up to about 8 seconds, 1280 px, with the replay's tones), ready for Photos or a message to the grandparents. The prototype records the replay with the browser's MediaRecorder, which writes MP4 (H.264) in Safari. iOS opens the share sheet only right after a tap, so the finished film waits for a second tap. The native app should encode the video directly (faster than real time) and can also save it as a **Live Photo**: the finished painting in the camera roll, and touch and hold shows it being painted.
+- **Backup.** *Alle Bilder sichern* in the parents' area writes the whole fridge into one ZIP file: every picture as a JPEG, plus a small data file per picture with its recording. Unzipped, it's simply a folder of pictures. *Sicherung laden* reads it back and adds the pictures this device doesn't have, time‑lapses included, for example after changing devices or clearing website data. The recording, not the JPEG, is the master copy: it can be re‑rendered at any size later.
 - **Next:**
-  - print‑quality export (re‑render the recording at 4K);
+  - print‑quality export (re‑render the recording at 4K, possible from the backup's recordings too);
   - a yearly "Malbuch" (PDF or photo book);
   - a voice note ("Was hast du gemalt?") recorded with the parent;
   - importing photos of *real* paintings, so paper and screen art hang side by side on the fridge (camera behind the parental gate).
@@ -385,6 +387,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 - break, daily budget, bedtime and rest days;
 - the parental gate and parents' area;
 - the fridge with time‑lapse replay, favorites, save/share and delete;
+- the time‑lapse as a film, and a backup of the whole fridge (one ZIP) that can be restored;
 - DE/EN everywhere.
 
 **Known limits:**

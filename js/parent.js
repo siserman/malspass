@@ -114,6 +114,62 @@
   }
   function minutes(n) { return n >= 60 && n % 60 === 0 ? Mal.t('hours', { n: n / 60 }) : Mal.t('min', { n: n }); }
   function setS(key, v) { Mal.settings[key] = v; Mal.saveSettings(); }
+
+  /* ---------- backup & restore: the state outlives re-renders of the sheet ---------- */
+  var backup = { state: 'idle' }, restoring = null, galMsg = null, backupBtn = null, restoreText = null;
+  function mb(bytes) {
+    var s = (bytes / 1048576).toFixed(bytes < 10485760 ? 1 : 0) + ' MB';
+    return Mal.lang === 'de' ? s.replace('.', ',') : s;
+  }
+  function showBackup() {
+    if (backupBtn) {
+      backupBtn.classList.toggle('ready', backup.state === 'ready');
+      backupBtn.textContent = backup.state === 'busy' ? Mal.t('backupBusy', { n: backup.n || 0, total: backup.total || '…' })
+        : backup.state === 'ready' ? Mal.t('backupReady', { size: mb(backup.blob.size) }) : Mal.t('backupMake');
+    }
+    if (restoreText) {
+      restoreText.textContent = restoring ? Mal.t('restoreBusy', { n: restoring.n || 0, total: restoring.total || '…' }) : Mal.t('restore');
+    }
+  }
+  function refreshSheet() { if ($('parent').classList.contains('open')) render(); }
+  // 1st tap builds the file; iOS opens the share sheet only right after a tap, so the 2nd tap saves it
+  function startBackup() {
+    if (backup.state === 'busy' || restoring) return;
+    if (backup.state === 'ready') { Mal.gallery.shareFile(backup.blob, backup.name); return; }
+    backup = { state: 'busy', n: 0, total: 0 };
+    galMsg = null;
+    showBackup();
+    Mal.gallery.backup(function (n, total) { backup.n = n; backup.total = total; showBackup(); }).then(function (r) {
+      if (r.count) backup = { state: 'ready', blob: r.blob, name: r.name };
+      else { backup = { state: 'idle' }; galMsg = { text: Mal.t('backupEmpty') }; }
+    }, function () {
+      backup = { state: 'idle' };
+      galMsg = { text: Mal.t('backupFail'), warn: true };
+    }).then(refreshSheet);
+  }
+  function startRestore(input) {
+    var file = input.files && input.files[0];
+    if (!file || restoring || backup.state === 'busy') { input.value = ''; return; }
+    restoring = { n: 0, total: 0 };
+    galMsg = null;
+    showBackup();
+    Mal.gallery.restore(file, function (n, total) { restoring.n = n; restoring.total = total; showBackup(); }).then(function (r) {
+      galMsg = { text: Mal.t('restoreDone', r), ok: true };
+    }, function (err) {
+      galMsg = { text: Mal.t(err && err.message === 'notbackup' ? 'restoreBad' : 'restoreFail'), warn: true };
+    }).then(function () {
+      restoring = null;
+      input.value = '';
+      refreshSheet();
+    });
+  }
+  // a finished backup is only good until the fridge changes, and it's big: let it go
+  Mal.on('gallery', function () { if (backup.state === 'ready') { backup = { state: 'idle' }; showBackup(); } });
+  Mal.on('overlay', function () {
+    if ($('parent').classList.contains('open')) return;
+    if (backup.state === 'ready') backup = { state: 'idle' };
+    galMsg = null;
+  });
   function onOff(v) { return [{ v: true, l: Mal.t('on') }, { v: false, l: Mal.t('off') }]; }
 
   function render() {
@@ -256,6 +312,25 @@
     var openG = el('button', 'btn', Mal.esc(Mal.t('galleryOpen')));
     Mal.tap(openG, function () { closeOverlay('parent'); Mal.gallery.open('parent'); });
     gal.appendChild(openG);
+    var keep = el('div', 'btnrow');
+    backupBtn = el('button', 'btn secondary');
+    Mal.tap(backupBtn, startBackup);
+    keep.appendChild(backupBtn);
+    // a real <label> opens the file picker natively (no script tap needed on iOS)
+    var pick = el('label', 'btn secondary');
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip,application/zip';
+    input.className = 'hidden-input';
+    input.addEventListener('change', function () { startRestore(input); });
+    restoreText = el('span', '');
+    pick.appendChild(input);
+    pick.appendChild(restoreText);
+    keep.appendChild(pick);
+    gal.appendChild(keep);
+    showBackup();
+    if (galMsg) gal.appendChild(el('p', 'note' + (galMsg.warn ? ' warn' : galMsg.ok ? ' ok' : ''), Mal.esc(galMsg.text)));
+    gal.appendChild(el('p', 'note', Mal.esc(Mal.t('backupNote'))));
 
     /* ---------- language & sound ---------- */
     var snd = section(Mal.t('secSound'));

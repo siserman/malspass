@@ -354,6 +354,12 @@
     play: '<svg viewBox="0 0 48 48"><path d="M17 11L37 24 17 37Z" fill="#43a047" stroke="#43a047" stroke-width="3" stroke-linejoin="round"/></svg>',
     share: '<svg viewBox="0 0 48 48"><path d="M16 20h-3v20h22V20h-3" fill="none" stroke="#555" stroke-width="3.5" stroke-linejoin="round"/>' +
            '<path d="M24 29V7M16 14l8-8 8 8" fill="none" stroke="#555" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    // the time-lapse as a film; filmSave: the finished film, ready to be saved
+    film: '<svg viewBox="0 0 48 48"><rect x="5" y="9" width="38" height="30" rx="4" fill="#37474f"/><g fill="#eceff1"><rect x="9" y="12" width="4" height="3" rx="1"/><rect x="17" y="12" width="4" height="3" rx="1"/><rect x="25" y="12" width="4" height="3" rx="1"/><rect x="33" y="12" width="4" height="3" rx="1"/><rect x="9" y="33" width="4" height="3" rx="1"/><rect x="17" y="33" width="4" height="3" rx="1"/><rect x="25" y="33" width="4" height="3" rx="1"/><rect x="33" y="33" width="4" height="3" rx="1"/></g>' +
+          '<path d="M20 19v10l8.5-5z" fill="#fdd835"/></svg>',
+    filmSave: '<svg viewBox="0 0 48 48"><g transform="translate(-2 -4)"><rect x="5" y="9" width="38" height="30" rx="4" fill="#37474f"/><g fill="#eceff1"><rect x="9" y="12" width="4" height="3" rx="1"/><rect x="17" y="12" width="4" height="3" rx="1"/><rect x="25" y="12" width="4" height="3" rx="1"/><rect x="33" y="12" width="4" height="3" rx="1"/><rect x="9" y="33" width="4" height="3" rx="1"/><rect x="17" y="33" width="4" height="3" rx="1"/><rect x="25" y="33" width="4" height="3" rx="1"/><rect x="33" y="33" width="4" height="3" rx="1"/></g></g>' +
+              '<circle cx="35" cy="34" r="10" fill="#43a047"/>' +
+              '<path d="M35 39.5v-10M30.5 33.5l4.5-4.5 4.5 4.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     trash: '<svg viewBox="0 0 48 48"><path d="M10 14h28M20 14V9h8v5M14 14l2 26h16l2-26" fill="none" stroke="#c62828" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     star: '<svg viewBox="0 0 48 48"><path d="M24 6l5.3 11.5 12.5 1.4-9.3 8.5 2.6 12.4L24 33.5 12.9 39.8l2.6-12.4-9.3-8.5 12.5-1.4z" fill="none" stroke="#f9a825" stroke-width="3.5" stroke-linejoin="round"/></svg>',
     starOn: '<svg viewBox="0 0 48 48"><path d="M24 6l5.3 11.5 12.5 1.4-9.3 8.5 2.6 12.4L24 33.5 12.9 39.8l2.6-12.4-9.3-8.5 12.5-1.4z" fill="#fdd835" stroke="#f9a825" stroke-width="3.5" stroke-linejoin="round"/></svg>',

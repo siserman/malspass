@@ -198,7 +198,7 @@
      routed through an <audio> element so iOS treats it as media
      playback and it sounds even with the silent switch on
      ============================================================ */
-  var AC = null, toneMaster = null, toneStreamAudio = null;
+  var AC = null, toneMaster = null, toneOut = null, toneStreamAudio = null;
   var tones = {}; // id -> {osc, gain, lfo, lfoGain}
   var VOICE_VOL = 0.14;
 
@@ -214,6 +214,7 @@
       comp.threshold.value = -18;
       comp.ratio.value = 6;
       toneMaster.connect(comp);
+      toneOut = comp;
       var routed = false;
       try {
         var dest = AC.createMediaStreamDestination();
@@ -292,6 +293,19 @@
     } catch (err) {
       try { t.osc.stop(); t.lfo.stop(); } catch (e2) {}
     }
+  };
+
+  // a copy of the tones for recording (the time-lapse film); null when tones are off
+  A.captureTones = function () {
+    try {
+      if (!ready() || !toneOut || !AC.createMediaStreamDestination) return null;
+      var d = AC.createMediaStreamDestination();
+      toneOut.connect(d);
+      return {
+        track: d.stream.getAudioTracks()[0] || null,
+        stop: function () { try { toneOut.disconnect(d); } catch (err) {} }
+      };
+    } catch (err) { return null; }
   };
 
   A.stopAllTones = function () {
