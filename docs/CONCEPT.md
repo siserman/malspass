@@ -274,9 +274,9 @@ There is no single official rulebook for painting apps, but the early‑years fr
   - **Apple Kids Category** (guideline 1.3): parental gate, no third‑party analytics or ads, age band *5 and under*, age rating 4+;
   - **Google Play Families**: target audience ≤ 5, no ad SDKs, no device identifiers; opt in to *Teacher Approved*;
   - **COPPA** (amended 2025, compliance date 22 April 2026) and **GDPR/DSGVO**. A privacy policy is still required by both stores — it will be short.
-- **⚠️ Voice licences must be fixed before selling.**
-  - The current English clips and the German "Alles sauber!" / "Deutsch" come from Piper TTS voices. Their models derive from **non‑commercial** datasets: *kerstin* was fine‑tuned from *ryan* (RyanSpeech, CC BY‑NC‑SA); *lessac* and *amy* from Blizzard‑2013 data. Piper itself says its voices are for personal use and research.
-  - ElevenLabs audio is only licensed for commercial use on a **paid** plan (the free plan is non‑commercial and needs attribution). Check which plan made the German color recordings.
+- **⚠️ Voice licences must be confirmed before selling.**
+  - Until 12 October 2026 the English clips and the German "Alles sauber!" / "Deutsch" came from Piper TTS voices; they have been replaced. Their models derive from **non‑commercial** datasets: *kerstin* was fine‑tuned from *ryan* (RyanSpeech, CC BY‑NC‑SA); *lessac* and *amy* from Blizzard‑2013 data. Piper itself says its voices are for personal use and research.
+  - ElevenLabs audio is only licensed for commercial use on a **paid** plan (the free plan is non‑commercial and needs attribution). Since 12 October 2026 all 60 lines in both languages are ElevenLabs recordings (voice *Laura*). They were made on a paid plan (confirmed); for the ten German colors from August, check which plan made them. Keep the invoices.
   - **Plan:** record Klecks with a voice actor, or a licensed paid TTS. All lines are in [`VOICE_SCRIPT.md`](VOICE_SCRIPT.md).
 - **Other asset licences:** fonts, sounds and music — keep a licence list from day one.
 - **Accessibility:** no reading needed, big targets, colors are spoken (which helps color‑blind children too), reduced motion is respected, and the palette at the bottom suits left‑ and right‑handers.
@@ -392,7 +392,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 - DE/EN everywhere.
 
 **Known limits:**
-- New lines use the device voice until they're recorded. `tools/make_voices.py` records them with your ElevenLabs voice (see [`VOICE_SCRIPT.md`](VOICE_SCRIPT.md)).
+- Every line is recorded (ElevenLabs *Laura*, 12 October 2026). A new line uses the device voice until `tools/make_voices.py` records it (see [`VOICE_SCRIPT.md`](VOICE_SCRIPT.md)).
 - There is no purchase flow.
 - In a browser tab, iOS may clear website storage — add it to the Home Screen.
 

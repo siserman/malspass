@@ -1,6 +1,6 @@
 # Voice script — Klecks
 
-Everything Klecks says, in both languages: **60 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
+Everything Klecks says, in both languages: **60 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. **All 60 lines are recorded in both languages** (12 October 2026): ElevenLabs *Laura*, `eleven_multilingual_v2`, `--speed 0.9`. The ten German colors are an earlier Laura recording. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
 
 ## Recording with your ElevenLabs voice — on your computer
 
@@ -64,14 +64,14 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `hello` | Hallo! Ich bin Klecks, ein kleiner Farbklecks. Malst du mit mir? | Hello! I'm Klecks, a little blob of paint. Will you paint with me? | — |
-| `hi` | Hallo! | Hi there! | — |
-| `letsGo` | Los geht's! | Let's go! | — |
-| `newThing` | Schau mal! Da ist etwas Neues! | Look! Something new! | — |
-| `sleeps1` | Noch einmal schlafen! | One more sleep! | — |
-| `sleeps2` | Noch zweimal schlafen! | Two more sleeps! | — |
-| `sleeps3` | Noch dreimal schlafen! | Three more sleeps! | — |
-| `sleepsN` | Noch ein paar Mal schlafen! | A few more sleeps! | — |
+| `hello` | Hallo! Ich bin Klecks, ein kleiner Farbklecks. Malst du mit mir? | Hello! I'm Klecks, a little blob of paint. Will you paint with me? | ✅ |
+| `hi` | Hallo! | Hi there! | ✅ |
+| `letsGo` | Los geht's! | Let's go! | ✅ |
+| `newThing` | Schau mal! Da ist etwas Neues! | Look! Something new! | ✅ |
+| `sleeps1` | Noch einmal schlafen! | One more sleep! | ✅ |
+| `sleeps2` | Noch zweimal schlafen! | Two more sleeps! | ✅ |
+| `sleeps3` | Noch dreimal schlafen! | Three more sleeps! | ✅ |
+| `sleepsN` | Noch ein paar Mal schlafen! | A few more sleeps! | ✅ |
 | `clean` | Alles sauber! | All clean! | ✅ |
 | `lang` | Deutsch | English | ✅ |
 
@@ -79,69 +79,69 @@ Tip: in ElevenLabs you can create a separate API key just for this. If your plan
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `ch_free` | Tipp auf eine Farbe und mal mit dem Finger! | Tap a color and paint with your finger! | — |
-| `ch_rainbow` | Ein Regenbogen-Pinsel! Alle Farben auf einmal! | A rainbow brush! All the colors at once! | — |
-| `ch_stamps` | Stempel! Tipp, tipp, tipp: ein Stern, ein Herz, eine Blume! | Stamps! Tap, tap, tap: a star, a heart, a flower! | — |
-| `ch_mirror` | Ein Zauberspiegel! Was du auf einer Seite malst, kommt auch auf die andere. Wie bei einem Schmetterling! | A magic mirror! What you paint on one side appears on the other side too. Just like a butterfly! | — |
-| `ch_night` | Es ist Nacht, und deine Farben leuchten! Mal den Mond und die Sterne! | It's night time, and your colors glow! Paint the moon and the stars! | — |
-| `ch_mix` | Heute mischen wir Farben! Was passiert, wenn Rot und Gelb sich treffen? | Let's mix colors! What happens when red and yellow meet? | — |
+| `ch_free` | Tipp auf eine Farbe und mal mit dem Finger! | Tap a color and paint with your finger! | ✅ |
+| `ch_rainbow` | Ein Regenbogen-Pinsel! Alle Farben auf einmal! | A rainbow brush! All the colors at once! | ✅ |
+| `ch_stamps` | Stempel! Tipp, tipp, tipp: ein Stern, ein Herz, eine Blume! | Stamps! Tap, tap, tap: a star, a heart, a flower! | ✅ |
+| `ch_mirror` | Ein Zauberspiegel! Was du auf einer Seite malst, kommt auch auf die andere. Wie bei einem Schmetterling! | A magic mirror! What you paint on one side appears on the other side too. Just like a butterfly! | ✅ |
+| `ch_night` | Es ist Nacht, und deine Farben leuchten! Mal den Mond und die Sterne! | It's night time, and your colors glow! Paint the moon and the stars! | ✅ |
+| `ch_mix` | Heute mischen wir Farben! Was passiert, wenn Rot und Gelb sich treffen? | Let's mix colors! What happens when red and yellow meet? | ✅ |
 
 ### Malkasten — a new tool in the paint box (said once, when the level arrives)
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `st_colors` | Mein Malkasten ist größer geworden! Jetzt gibt es auch Orange, Lila, Rosa und Braun. | My paint box got bigger! Now there's orange, purple, pink and brown too. | — |
-| `st_sizes` | Dicke und dünne Pinsel! Probier mal ganz dünn – und dann ganz dick. | Thick and thin brushes! Try really thin – and then really thick. | — |
-| `st_eraser` | Ein Radiergummi! Damit kannst du etwas wieder wegmachen und neu malen. | An eraser! You can take something away and paint it again. | — |
-| `st_brushes` | Neue Pinsel! Wachsmalstift, Wasserfarbe und Filzstift. Jeder malt ein bisschen anders. | New brushes! Crayon, watercolor and marker. Each one paints a little differently. | — |
-| `st_bucket` | Ein Farbeimer! Tipp in eine Fläche, dann wird sie bunt. Und der Pfeil geht einen Schritt zurück. | A paint bucket! Tap inside a shape and it fills with color. And the arrow goes one step back. | — |
-| `st_shades` | Hell und dunkel! Jede Farbe gibt es jetzt heller und dunkler. | Light and dark! Now every color comes lighter and darker. | — |
+| `st_colors` | Mein Malkasten ist größer geworden! Jetzt gibt es auch Orange, Lila, Rosa und Braun. | My paint box got bigger! Now there's orange, purple, pink and brown too. | ✅ |
+| `st_sizes` | Dicke und dünne Pinsel! Probier mal ganz dünn – und dann ganz dick. | Thick and thin brushes! Try really thin – and then really thick. | ✅ |
+| `st_eraser` | Ein Radiergummi! Damit kannst du etwas wieder wegmachen und neu malen. | An eraser! You can take something away and paint it again. | ✅ |
+| `st_brushes` | Neue Pinsel! Wachsmalstift, Wasserfarbe und Filzstift. Jeder malt ein bisschen anders. | New brushes! Crayon, watercolor and marker. Each one paints a little differently. | ✅ |
+| `st_bucket` | Ein Farbeimer! Tipp in eine Fläche, dann wird sie bunt. Und der Pfeil geht einen Schritt zurück. | A paint bucket! Tap inside a shape and it fills with color. And the arrow goes one step back. | ✅ |
+| `st_shades` | Hell und dunkel! Jede Farbe gibt es jetzt heller und dunkler. | Light and dark! Now every color comes lighter and darker. | ✅ |
 
 ### Tool names (said each time a tool is tapped — keep them short)
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `tool_paint` | Fingerfarbe | Finger paint | — |
-| `tool_crayon` | Wachsmalstift | Crayon | — |
-| `tool_water` | Wasserfarbe | Watercolor | — |
-| `tool_marker` | Filzstift | Marker | — |
-| `tool_eraser` | Radiergummi | Eraser | — |
-| `tool_bucket` | Farbeimer | Paint bucket | — |
-| `size_s` | Dünn | Thin | — |
-| `size_m` | Mittel | Medium | — |
-| `size_l` | Dick | Thick | — |
-| `shade_light` | Hell | Light | — |
-| `shade_normal` | Kräftig | Bold | — |
-| `shade_dark` | Dunkel | Dark | — |
+| `tool_paint` | Fingerfarbe | Finger paint | ✅ |
+| `tool_crayon` | Wachsmalstift | Crayon | ✅ |
+| `tool_water` | Wasserfarbe | Watercolor | ✅ |
+| `tool_marker` | Filzstift | Marker | ✅ |
+| `tool_eraser` | Radiergummi | Eraser | ✅ |
+| `tool_bucket` | Farbeimer | Paint bucket | ✅ |
+| `size_s` | Dünn | Thin | ✅ |
+| `size_m` | Mittel | Medium | ✅ |
+| `size_l` | Dick | Thick | ✅ |
+| `shade_light` | Hell | Light | ✅ |
+| `shade_normal` | Kräftig | Bold | ✅ |
+| `shade_dark` | Dunkel | Dark | ✅ |
 
 ### Shapes (stamps chapter)
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `circle` | Kreis | Circle | — |
-| `square` | Quadrat | Square | — |
-| `triangle` | Dreieck | Triangle | — |
-| `star` | Stern | Star | — |
-| `heart` | Herz | Heart | — |
-| `flower` | Blume | Flower | — |
+| `circle` | Kreis | Circle | ✅ |
+| `square` | Quadrat | Square | ✅ |
+| `triangle` | Dreieck | Triangle | ✅ |
+| `star` | Stern | Star | ✅ |
+| `heart` | Herz | Heart | ✅ |
+| `flower` | Blume | Flower | ✅ |
 
 ### Describing pictures — never judging
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `soMuch` | So viel | So much | — |
-| `manyColors` | So viele Farben! | So many colors! | — |
-| `fridge` | Das kommt an den Kühlschrank! | That goes on the fridge! | — |
-| `fridgeEmpty` | Der Kühlschrank ist noch leer. Komm, wir malen was! | The fridge is still empty. Come on, let's paint something! | — |
-| `tellMe` | Erzähl mal: Wie hast du das gemalt? | Tell me: how did you paint that? | — |
+| `soMuch` | So viel | So much | ✅ |
+| `manyColors` | So viele Farben! | So many colors! | ✅ |
+| `fridge` | Das kommt an den Kühlschrank! | That goes on the fridge! | ✅ |
+| `fridgeEmpty` | Der Kühlschrank ist noch leer. Komm, wir malen was! | The fridge is still empty. Come on, let's paint something! | ✅ |
+| `tellMe` | Erzähl mal: Wie hast du das gemalt? | Tell me: how did you paint that? | ✅ |
 
 ### Winding down
 
 | key | Deutsch | English | recorded |
 |---|---|---|---|
-| `sleepy` | Ich werde langsam müde. Noch ein letztes Bild! | I'm getting sleepy. One last picture! | — |
-| `goodnight` | Das war schön! Jetzt mache ich ein kleines Nickerchen. Bis bald! | That was lovely! Now I'm going to have a little nap. See you soon! | — |
-| `goodnightDay` | Das war schön heute! Jetzt schlafe ich. Bis morgen! | That was lovely today! Now I am going to sleep. See you tomorrow! | — |
-| `realPaint` | Mal doch mit echten Stiften weiter! | Why not keep painting with real crayons? | — |
-| `awake` | Ausgeschlafen! Wollen wir malen? | I'm all rested! Shall we paint? | — |
+| `sleepy` | Ich werde langsam müde. Noch ein letztes Bild! | I'm getting sleepy. One last picture! | ✅ |
+| `goodnight` | Das war schön! Jetzt mache ich ein kleines Nickerchen. Bis bald! | That was lovely! Now I'm going to have a little nap. See you soon! | ✅ |
+| `goodnightDay` | Das war schön heute! Jetzt schlafe ich. Bis morgen! | That was lovely today! Now I am going to sleep. See you tomorrow! | ✅ |
+| `realPaint` | Mal doch mit echten Stiften weiter! | Why not keep painting with real crayons? | ✅ |
+| `awake` | Ausgeschlafen! Wollen wir malen? | I'm all rested! Shall we paint? | ✅ |
 Recordings in the app today: 12 German, 12 English. The old English clips and the German "Alles sauber!" / "Deutsch" come from Piper TTS voices trained on non‑commercial data. Re‑record them (`--all`) before a paid release.

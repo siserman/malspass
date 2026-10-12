@@ -90,8 +90,8 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 
 ### A. Account and legal (blockers)
 - [ ] **DSA trader verification** (the name document): without it, no sales in Germany or Austria. It's account‑wide and already gates babinger
-- [ ] **Voice licences:** the English clips and the German "Alles sauber!"/"Deutsch" are Piper voices built on **non‑commercial** data. They must go. Check which ElevenLabs plan made the German color clips
-- [ ] **Record all 60 lines in both languages** (12 of 60 per language are recorded today; the rest use the device voice). Cheapest clean route: one month of a **paid** ElevenLabs plan, generate everything with `tools/make_voices.py --all`, and keep the invoice. ElevenLabs keeps the commercial licence for audio made during a paid month after you cancel. A voice actor sounds better and costs a few hundred euros
+- [x] **Voice licences:** the Piper clips (built on non‑commercial data) are gone, replaced 12 Oct 2026. The new recordings are on a paid plan; check which plan made the ten German color clips in August
+- [x] **All 60 lines recorded in both languages** (12 Oct 2026, ElevenLabs *Laura*), replacing the Piper clips. They were made on a **paid** plan (confirmed), so ElevenLabs licenses them for commercial use; keep the invoice. A voice actor remains an option for the final Klecks
 - [ ] **Name: Klecksinger** (see [NAME_AND_BRAND.md](NAME_AND_BRAND.md)). "Malspaß" is too generic to protect, and "Klecks" alone is taken in our classes (sigikid for toys, a childcare provider for education, "Kleo & Klecks" for software). "Klecksinger" turns up nowhere: no app, no trademark, no domain. Reserve it in App Store Connect and file it at the DPMA
 - [ ] **Privacy policy and support page** on appinger.app: a short Klecksinger section ("no data collected; drawings stay on the device")
 - [ ] **Licence list** for fonts, sounds and icons (start it now)
