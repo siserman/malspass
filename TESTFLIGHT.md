@@ -12,7 +12,9 @@ Created 12 October 2026 to reserve the name. Nothing has been uploaded to it yet
 | Bundle ID | `com.appinger.klecksinger`, registered through the App Store Connect API the same day |
 | Primary language | English (U.S.), with a German localization |
 | Team | `XWY4S3RCZA` (Stephan Isermann) |
-| Category, age rating, Kids band | not set yet. They belong to the first submission: Kids Category, age band *5 and under* ([docs/STORE_PLAN.md](docs/STORE_PLAN.md), section D) |
+| Age rating | **4+**, saved 12 Oct 2026 (Brazil: General Audiences, Korea: ALL, Vietnam: 00+). Parental controls: yes; web, user content, social, chat, ads: no; every content question: none |
+| Kids Category | **Made for Kids, ages 5 and under.** Apple: this "cannot be changed later". Once the app is approved, it and every update must follow the Kids guidelines, unless a new app record is made. So no third‑party analytics, no ads, no RevenueCat, and links or purchases only behind the parental gate |
+| Category | not chosen yet (Education or Entertainment, [docs/STORE_PLAN.md](docs/STORE_PLAN.md)) |
 
 ## Builds
 

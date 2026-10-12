@@ -63,7 +63,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 
 **The child never sees a purchase.** Apple's Kids Category rule 1.3 allows purchases only behind the parental gate. Locked chapters therefore don't appear as locked gifts in the child's world. They simply aren't there yet. Parents learn about the unlock in two places: the first‑start note ("Zwei Kapitel sind frei. Die ganze Welt: einmal 6,99 €, kein Abo") and one calm card in the parents' area. That costs some conversion, and it's the right call.
 
-**The Appinger Pass:** not in version 1. The Pass runs through RevenueCat, and every third‑party SDK is a risk in the Kids Category. Revisit it once the Pass exists and can unlock Klecksinger without adding an SDK.
+**The Appinger Pass:** not in version 1. The Pass runs through RevenueCat, and every third‑party SDK is a risk in the Kids Category. Revisit it once the Pass exists and can unlock Klecksinger without adding an SDK. Since Made for Kids is saved and can't be undone after approval, that condition is permanent for this app.
 
 ### What the numbers mean
 
@@ -114,7 +114,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 - [ ] **Test devices:** an old iPad on iOS 15, a current iPad and an iPhone, all in airplane mode
 
 ### D. Store listing and review
-- [ ] **Kids Category**, age band **5 and under**. The new age‑rating questionnaire: parental controls yes, ads no, messaging no
+- [x] **Kids Category**, age band **5 and under**, and the age‑rating questionnaire (4+): saved 12 Oct 2026. Apple says Made for Kids can't be changed once the app is approved, short of a new app record
 - [ ] **Privacy label: "Data Not Collected"**
 - [ ] **Screenshots** for 13" iPad and 6.9" iPhone in German and English. **An app preview video**: the time‑lapse makes one almost by itself
 - [ ] **Listing text, DE/EN:** lead with *Die Mal‑App, die selbst Schluss macht* and *einmal kaufen, kein Abo, keine Werbung, keine Daten*. **No health claims** ("reduces tantrums"): the research belongs in the app's "why" section, not in store copy
