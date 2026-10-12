@@ -1,6 +1,6 @@
 # Voice script — Klecks
 
-Everything Klecks says, in both languages: **60 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. **All 60 lines are recorded in both languages** (12 October 2026): ElevenLabs *Laura*, `eleven_multilingual_v2`, `--speed 0.9`. The ten German colors are an earlier Laura recording. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
+Everything Klecks says, in both languages: **60 lines**. The texts live in [`js/lines.js`](../js/lines.js). The key is the file name: `audio/de-<key>.mp3` and `audio/en-<key>.mp3`. A line without a recording is read by the device's built‑in voice. **All 60 lines are recorded in both languages** (12 October 2026): ElevenLabs *Laura*, `eleven_multilingual_v2`, `--speed 0.9`. The short German words (colors, shapes, tools, sizes, shades) are cut from spoken lists, see below. You can hear every line in the app: parents' area → **Testmodus** → *Alle Sätze anhören* (each line shows *Aufnahme* or *Gerätestimme*).
 
 ## Recording with your ElevenLabs voice — on your computer
 
@@ -32,6 +32,19 @@ export ELEVENLABS_API_KEY="…"
 ```
 
 Tip: in ElevenLabs you can create a separate API key just for this. If your plan allows it, restrict it to text‑to‑speech and give it a small credit limit. Delete it when you're done.
+
+## Short German words: record them as lists
+
+Laura is an American voice. In German sentences she sounds German, because the sentence tells the model the language. A single word on its own has no such context, and it comes out with her accent: "Braun" sounds like *brown*, "Dick" like *deck*, "Orange" like *all right*. Forcing the language (`--model eleven_turbo_v2_5 --language-code`) didn't fix it.
+
+So the 28 short German words are recorded as spoken lists and cut apart at the pauses: [`tools/make_voice_lists.py`](../tools/make_voice_lists.py) records "Das sind die Farben. … Rot. … Orange. …" as one utterance and writes each word to its own file. Run it instead of `make_voices.py` for these keys, and **don't re‑record them with `make_voices.py --all`**, which would bring the accent back.
+
+```sh
+python tools/make_voice_lists.py              # every group: colors, shapes, tools, shades, sizes
+python tools/make_voice_lists.py sizes        # one group again
+```
+
+Takes vary. Each group was recorded two or three times and the best file kept for each word, judged with ElevenLabs speech‑to‑text set to German (nobody has listened to them yet). "Dünn" is the weakest: the check hears *Dön*, close but not quite.
 
 ## Direction for the voice
 
