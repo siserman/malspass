@@ -80,7 +80,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 - **The German press channel exists:** iphone‑ticker, ifun and appgefahren regularly write about ad‑free kids apps.
 
 **Against:**
-- **The queue.** The portfolio rule is one app at a time, and babinger is next. Klecksinger isn't in the portfolio table or on the master board yet, so it has no slot.
+- **The queue.** The portfolio rule is one app at a time, and babinger is next. Since 2026-10-12 Klecksinger is in the portfolio table and on the master board (*20 Next In Line*), after babinger; whether it goes before or after workinger2 is still open.
 - **The money is small**, and the time budget next to a full‑time job is the real cost.
 - **Germany is blocked right now.** Until the DSA trader document is verified, no app from this account sells in the EU, and Klecksinger is German‑first. (Switzerland isn't in the EU, so it would work there.)
 
@@ -135,7 +135,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 
 | When | What |
 |---|---|
-| **Now (no code)** | DSA document · name and trademark check · family playtest with the PWA · voice decision · add Klecksinger to the portfolio table and master board with a queue slot |
+| **Now (no code)** | DSA document · name and trademark check · family playtest with the PWA · voice decision · decide its slot relative to workinger2 (the board card) |
 | **After babinger is in the store** | Section C (≈ 3–5 weeks part‑time, my rough estimate) · voice recording · listing · TestFlight with families |
 | **Launch** | Not rushed for Christmas 2026. Babinger comes first, Germany is blocked until the DSA document is verified, and the voice isn't recorded yet. **Spring 2027** for a quiet launch and reviews, and Christmas 2027 for the first real push. December is the biggest month for kids apps (new tablets) |
 
