@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — everything Klecks says (DE/EN)
+   Klecksinger — everything Klecks says (DE/EN)
 
    Plain JSON between the markers, so tools/make_voices.py can read
    it and record every line with ElevenLabs. The key is the file

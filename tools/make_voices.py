@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Malspaß — record Klecks's lines with your ElevenLabs voice, on your own computer.
+Klecksinger — record Klecks's lines with your ElevenLabs voice, on your own computer.
 
 Your API key stays on this machine: the script reads it from the environment
 variable ELEVENLABS_API_KEY or asks for it (hidden input), sends it only to
@@ -151,12 +151,12 @@ def write_clips():
 
 def bump_cache():
     text = SW_JS.read_text(encoding='utf-8')
-    m = re.search(r"var CACHE = 'malspass-v(\d+)';", text)
+    m = re.search(r"var CACHE = '([a-z]+)-v(\d+)';", text)
     if not m:
         return None
-    n = int(m.group(1)) + 1
-    write_text(SW_JS, text.replace(m.group(0), f"var CACHE = 'malspass-v{n}';", 1))
-    return n
+    name = f'{m.group(1)}-v{int(m.group(2)) + 1}'
+    write_text(SW_JS, text.replace(m.group(0), f"var CACHE = '{name}';", 1))
+    return name
 
 
 def main():
@@ -246,7 +246,7 @@ def main():
     clips = write_clips()
     version = bump_cache()
     print(f'\nDone. {sum(len(v) for v in clips.values())} recordings listed in audio/clips.js'
-          + (f', offline cache is now malspass-v{version}.' if version else '.'))
+          + (f', offline cache is now {version}.' if version else '.'))
     if not has_ffmpeg and not args.no_ffmpeg:
         print('Tip: with ffmpeg installed, silence gets trimmed and loudness evened out.')
     print('Next: listen in the app (parents\' area → Testmodus → "Alle Sätze anhören"), then commit and push audio/ and sw.js.')

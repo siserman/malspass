@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — audio
+   Klecksinger — audio
    Recorded clips first (reliable on iOS, play even with the silent
    switch on), device speech as fallback, and the per-finger
    painting tones.

@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — app
+   Klecksinger — app
    Screens, Klecks' world (home + chapters), the painting UI,
    the goodnight ritual, and boot.
    ============================================================ */

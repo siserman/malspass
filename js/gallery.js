@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — the fridge (gallery)
+   Klecksinger — the fridge (gallery)
    Every picture is kept on this device only (IndexedDB):
    a small 'meta' record with the thumbnail for the fridge door,
    and a 'full' record with the image and the stroke recording
@@ -11,7 +11,7 @@
   var Mal = window.Mal, A = Mal.audio;
   var G = Mal.gallery = {};
   var $ = Mal.$;
-  var DB_NAME = 'malspass', MAX_ITEMS = 300;
+  var DB_NAME = 'malspass', MAX_ITEMS = 300; // the app's first name; kept so pictures saved before the rename survive
   var dbp = null, mem = null, metas = null;
 
   /* ============================================================
@@ -259,7 +259,7 @@
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function baseName(full) {
     var d = new Date(full.id);
-    return 'malspass-' + Mal.dayKey(full.id) + '-' + pad(d.getHours()) + pad(d.getMinutes());
+    return 'klecksinger-' + Mal.dayKey(full.id) + '-' + pad(d.getHours()) + pad(d.getMinutes());
   }
   function dataURLtoBytes(url) {
     var bin = atob(url.slice(url.indexOf(',') + 1));
@@ -271,7 +271,7 @@
     try {
       var file = new File([blob], name, { type: blob.type });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'Malspaß' }).catch(function () {});
+        navigator.share({ files: [file], title: 'Klecksinger' }).catch(function () {});
         return;
       }
     } catch (err) {}
@@ -416,9 +416,10 @@
      BACKUP — every picture with its recording in one ZIP file.
      Stored, not compressed (the pictures are JPEGs already). Unzipped
      it is a folder of pictures; "Sicherung laden" reads it back.
-       2026-10-05_14-03-27.jpg          the picture
-       malspass/2026-10-05_14-03-27.json  recording and fridge data
-       malspass/backup.json             what's inside (format, version)
+       2026-10-05_14-03-27.jpg               the picture
+       klecksinger/2026-10-05_14-03-27.json  recording and fridge data
+       klecksinger/backup.json               what's inside (format, version)
+     Backups made before the rename use "malspass/" and still restore.
      ============================================================ */
   var CRC_TABLE = null;
   function crc32(bytes) {
@@ -492,9 +493,9 @@
       var todo = list.slice().reverse(), zip = zipWriter(), index = [], used = {}, i = 0;
       function next() {
         if (i >= todo.length) {
-          var manifest = { format: 'malspass-backup', version: 1, app: 'Malspaß', created: new Date().toISOString(), pictures: index };
-          zip.add('malspass/backup.json', enc.encode(JSON.stringify(manifest, null, 1)), Date.now());
-          return { blob: zip.blob(), name: 'malspass-' + Mal.dayKey() + '.zip', count: index.length };
+          var manifest = { format: 'klecksinger-backup', version: 1, app: 'Klecksinger', created: new Date().toISOString(), pictures: index };
+          zip.add('klecksinger/backup.json', enc.encode(JSON.stringify(manifest, null, 1)), Date.now());
+          return { blob: zip.blob(), name: 'klecksinger-' + Mal.dayKey() + '.zip', count: index.length };
         }
         var m = todo[i++];
         return G.get(m.id).then(function (full) {
@@ -506,8 +507,8 @@
                          brush: full.brush, bg: full.bg, w: full.w, h: full.h, gw: full.gw || 0, gh: full.gh || 0,
                          strokes: full.strokes || [], ev: full.ev ? evToB64(full.ev) : null };
             zip.add(name + '.jpg', dataURLtoBytes(full.img), m.id);
-            zip.add('malspass/' + name + '.json', enc.encode(JSON.stringify(data)), m.id);
-            index.push({ id: m.id, image: name + '.jpg', data: 'malspass/' + name + '.json' });
+            zip.add('klecksinger/' + name + '.json', enc.encode(JSON.stringify(data)), m.id);
+            index.push({ id: m.id, image: name + '.jpg', data: 'klecksinger/' + name + '.json' });
           }
           if (onProgress) onProgress(i, todo.length);
           return next();
@@ -578,15 +579,16 @@
   G.restore = function (file, onProgress) {
     var dec = new TextDecoder();
     return zipReader(file).then(function (zip) {
-      var man = null;
+      var man = null, dir = null; // "klecksinger", or "malspass" in backups made before the rename
       zip.names.forEach(function (n) {
-        if (/(^|\/)malspass\/backup\.json$/.test(n) && n.indexOf('__MACOSX') !== 0) man = n;
+        var hit = /(^|\/)(klecksinger|malspass)\/backup\.json$/.exec(n);
+        if (hit && n.indexOf('__MACOSX') !== 0) { man = n; dir = hit[2]; }
       });
       if (!man) throw new Error('notbackup');
-      var root = man.slice(0, man.length - 'malspass/backup.json'.length); // a folder, if it was re-zipped
+      var root = man.slice(0, man.length - (dir + '/backup.json').length); // a folder, if it was re-zipped
       return zip.read(man).then(function (bytes) {
         var m = JSON.parse(dec.decode(bytes));
-        if (!m || m.format !== 'malspass-backup' || !(m.version <= 1) || !Array.isArray(m.pictures)) throw new Error('notbackup');
+        if (!m || m.format !== dir + '-backup' || !(m.version <= 1) || !Array.isArray(m.pictures)) throw new Error('notbackup');
         return G.list().then(function (list) {
           var have = {}, added = 0, skipped = 0, i = 0;
           list.forEach(function (x) { have[x.id] = true; });

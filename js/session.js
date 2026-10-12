@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — painting time
+   Klecksinger — painting time
    A session budget, a daily budget, a break between sessions and
    a bedtime. Only real, visible, recently-touched time counts.
    The sun in the sky shows how much painting time is left; when

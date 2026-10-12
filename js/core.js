@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — core
+   Klecksinger — core
    Namespace, hardening, storage, events, colors, chapters,
    settings, input helpers and icons.
    Plain ES5 on purpose: runs on hand-me-down iPads and from file://
@@ -42,7 +42,7 @@
      STORAGE — small JSON values in localStorage, never throws
      (paintings live in IndexedDB, see gallery.js)
      ============================================================ */
-  var PREFIX = 'malspass.';
+  var PREFIX = 'malspass.'; // the app's first name; kept so settings saved before the rename survive
   Mal.store = {
     get: function (key, fallback) {
       try {

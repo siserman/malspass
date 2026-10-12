@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — Klecks, the mascot
+   Klecksinger — Klecks, the mascot
    A little drop of paint that takes on the chosen color.
    Pure SVG + one small animation loop: breathing, blinking,
    looking at the finger, talking, bouncing, yawning, sleeping.

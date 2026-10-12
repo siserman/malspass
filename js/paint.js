@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — the paper
+   Klecksinger — the paper
    Multi-touch painting on the live canvas. Every stroke is also
    recorded (16-bit coordinates + brush + color + seed) so the
    gallery can replay how a picture was made.

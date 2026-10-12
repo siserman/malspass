@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — for grown-ups
+   Klecksinger — for grown-ups
    Parental gate (numbers spelled out as words — a pre-reader
    can't pass it), the settings sheet and the first-run welcome.
    ============================================================ */

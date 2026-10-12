@@ -1,6 +1,6 @@
-# Malspaß → paid iOS/Android app — concept
+# Klecksinger → paid iOS/Android app — concept
 
-*Draft for discussion · September 2026 · goes with the playable prototype on this branch*
+*Draft for discussion · September 2026 · goes with the playable prototype on this branch · called Malspaß until October 2026*
 
 ---
 
@@ -91,7 +91,7 @@ My recommendation is Klecks.
 - The prototype's SVG Klecks already shows every state the app needs: idle/breathing, blink, look at the finger, talk, bounce, wave, yawn, sleepy, asleep, glow, and any color.
 - For the real app, build him in **Rive**, an interactive animation tool with state machines and lip‑sync; Duolingo's characters are made with it. If you'd rather give him a 3D look, rendered sprite sheets work too.
 
-**Name check:** "Malspaß" is a generic German word — weak as a trademark, and App Store names must be unique. Check DPMA/EUIPO and both stores. Consider a store name like *"Klecks – Malspaß für Kinder"*.
+**Name:** the app is called **Klecksinger**, and Klecks stays the character inside it (decided October 2026). "Malspaß" is a generic German word, too weak to protect, and "Klecks" alone is already taken in our trademark classes. The search and the branding are in [NAME_AND_BRAND.md](NAME_AND_BRAND.md).
 
 ## 5. Story and chapters
 
@@ -157,7 +157,7 @@ Chapters bring new *ideas*. The **Malkasten** (paint box) makes the *painting it
 
 ### The problems parents actually have
 
-| Problem | What Malspaß does |
+| Problem | What Klecksinger does |
 |---|---|
 | **The fight at the end** (transition tantrums) | The *app* ends the session. A sun in a small sky window moves across as painting time passes. Near the end Klecks gets sleepy and says *"Noch ein letztes Bild!"* — a task‑based ending, not a countdown. Hanging that last picture on the fridge starts the goodnight. A session never ends in the middle of a stroke. Then comes a ritual: yawn, "Das war schön", *"Mal doch mit echten Stiften weiter!"*, sleep. |
 | **"Just one more"** | Sessions are finite, chapters arrive with the days, there's no autoplay into the next thing and nothing to collect. |
@@ -191,13 +191,13 @@ Rest days are optional. Grown‑ups can always wake Klecks for 10 extra minutes 
 ### Platform tools
 
 - The app works together with iOS Screen Time and Guided Access, and with Android Family Link.
-- iOS 27 introduced per‑category time allowances (Entertainment, Games, Social). Choose the App Store category honestly and never try to game it. Malspaß's own limits are finer and friendlier.
+- iOS 27 introduced per‑category time allowances (Entertainment, Games, Social). Choose the App Store category honestly and never try to game it. Klecksinger's own limits are finer and friendlier.
 
 ## 7. Pedagogy
 
-Hirsh‑Pasek et al. (2015) name four pillars of learning apps. Here's how Malspaß meets each:
+Hirsh‑Pasek et al. (2015) name four pillars of learning apps. Here's how Klecksinger meets each:
 
-| Pillar | In Malspaß |
+| Pillar | In Klecksinger |
 |---|---|
 | **Active** ("minds‑on") | Open‑ended creating instead of tapping through content. |
 | **Engaged** (not distracted) | No reward pop‑ups, no ads, calm visuals; Klecks stays quiet while the child paints. |
@@ -219,7 +219,7 @@ Plus a clear learning goal per chapter (see the table in chapter 5).
 
 There is no single official rulebook for painting apps, but the early‑years frameworks agree on what art education for 2–6‑year‑olds is about. Children explore materials and tools freely, discover color and color mixing, revise their ideas, and talk about how they made something. The Malkasten turns that into an order of tools.
 
-| Guideline | What it says | In Malspaß |
+| Guideline | What it says | In Klecksinger |
 |---|---|---|
 | **England — EYFS** *Development Matters* (DfE, revised 2023), birth to three | "Explore paint, using fingers and other parts of their bodies as well as brushes and other tools." | Level 1: finger paint, one big brush, six colors |
 | same, 3‑ and 4‑year‑olds | "Explore colour and colour‑mixing." | the Farbenküche chapter; watercolor glazes mix (level 5); light and dark (level 7) |
@@ -359,7 +359,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 ## 14. Decisions for you
 
 1. **Mascot:** Klecks the paint drop? *(recommended)*
-2. **Name:** keep "Malspaß", or brand around Klecks in the stores?
+2. **Name:** decided, see below.
 3. **Age focus:** 3–6, with an honest note for under‑3s? *(recommended)*
 4. **Business model:** free + one‑time unlock *(recommended)*, or paid upfront?
 5. **Rest days:** off by default *(recommended)*, or 1–2 days suggested at first start?
@@ -367,6 +367,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 7. **Tech:** Capacitor *(recommended)* or a rewrite?
 
 **Decided (October 2026):**
+- **Name:** Klecksinger. Klecks stays the character ([NAME_AND_BRAND.md](NAME_AND_BRAND.md)).
 - **Chapter pace:** a new chapter every 2 days.
 - **Malkasten pace:** a new level every 3 days, independent of the chapters.
 - **Undo:** stays late (level 6) and takes back only the last stroke.

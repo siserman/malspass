@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — texts for the grown-ups' screens (DE/EN)
+   Klecksinger — texts for the grown-ups' screens (DE/EN)
    Kids never need to read anything. Everything Klecks *says*
    lives in js/lines.js (see docs/VOICE_SCRIPT.md).
    ============================================================ */
@@ -114,7 +114,7 @@
     restore:     { de: 'Sicherung laden', en: 'Restore a backup' },
     restoreBusy: { de: 'Wird geladen … {n} von {total}', en: 'Restoring … {n} of {total}' },
     restoreDone: { de: '{added} Bilder zurückgeholt, {skipped} waren schon da.', en: '{added} pictures restored, {skipped} were already here.' },
-    restoreBad:  { de: 'Das ist keine Malspaß‑Sicherung.', en: 'This is not a Malspaß backup.' },
+    restoreBad:  { de: 'Das ist keine Klecksinger‑Sicherung.', en: 'This is not a Klecksinger backup.' },
     restoreFail: { de: 'Die Sicherung konnte nicht geladen werden.', en: "The backup couldn't be restored." },
     backupNote:  { de: 'Die Sicherung ist eine ZIP‑Datei mit allen Bildern und ihren Zeitraffern. Bewahre sie in der Dateien‑App, in iCloud Drive oder auf dem Computer auf. „Sicherung laden" holt Bilder zurück, die auf diesem Gerät fehlen. Der Kühlschrank behält die neuesten 300 Bilder und alle Favoriten.',
                    en: 'The backup is a ZIP file with every picture and its time‑lapse. Keep it in the Files app, in iCloud Drive or on a computer. "Restore a backup" brings back pictures that are missing on this device. The fridge keeps the newest 300 pictures and every favorite.' },
@@ -124,24 +124,24 @@
     tones:       { de: 'Mal-Töne & Klänge', en: 'Painting tones & sounds' },
     voice:       { de: 'Stimme von Klecks', en: "Klecks's voice" },
 
-    secWhy:      { de: 'Warum Malspaß so ist', en: 'Why Malspaß works this way' },
+    secWhy:      { de: 'Warum Klecksinger so ist', en: 'Why Klecksinger works this way' },
     why: {
       de: [
-        'Malspaß ist ein Mal-Spielzeug, kein Zeitfresser. Für Kinder von 3 bis 6 Jahren empfiehlt die Leitlinie der Kinder- und Jugendmedizin höchstens 30 Minuten Bildschirmzeit – und nicht an jedem Tag. Malspaß hilft dabei, statt dagegen zu arbeiten.',
+        'Klecksinger ist ein Mal-Spielzeug, kein Zeitfresser. Für Kinder von 3 bis 6 Jahren empfiehlt die Leitlinie der Kinder- und Jugendmedizin höchstens 30 Minuten Bildschirmzeit – und nicht an jedem Tag. Klecksinger hilft dabei, statt dagegen zu arbeiten.',
         'Klecks beendet die Malzeit selbst: Er wird müde, malt mit deinem Kind ein letztes Bild, sagt Gute Nacht – und bricht nie mitten im Strich ab. Studien zeigen: Wenn die App das Ende macht statt der Eltern, klappt der Übergang deutlich besser.',
         'Keine Punkte, Sterne oder Belohnungen fürs Malen. Eine bekannte Studie mit Kita-Kindern zeigte: Wer fürs Malen eine Belohnung erwartet, malt danach weniger gern.',
         'Klecks bewertet nicht („toll!“), sondern beschreibt („So viel Blau!“). Das hält die Neugier wach.',
         'Neue Kapitel kommen mit der Zeit – nicht durch mehr Spielen. Keine Serien, keine Benachrichtigungen, keine Werbung, keine Daten.',
-        'Am schönsten ist Malspaß gemeinsam: Fragt euer Kind, was es gemalt hat – und malt danach mit echten Farben weiter.',
+        'Klecksinger ist am schönsten gemeinsam: Fragt euer Kind, was es gemalt hat – und malt danach mit echten Farben weiter.',
         'Bitte nicht zum Beruhigen bei Wutanfällen nutzen. Besser als feste, geplante Malzeit.'
       ],
       en: [
-        'Malspaß is a painting toy, not a time sink. For children aged 3–6, the German pediatric guideline recommends at most 30 minutes of screen time – and not every day. Malspaß is built to help with that, not to fight it.',
+        'Klecksinger is a painting toy, not a time sink. For children aged 3–6, the German pediatric guideline recommends at most 30 minutes of screen time – and not every day. Klecksinger is built to help with that, not to fight it.',
         'Klecks ends each session: gets sleepy, finishes one last picture with your child, says goodnight – and never stops mid-stroke. Research shows transitions go much better when the technology ends the session instead of the parent.',
         'No points, stars or rewards for painting. A well-known study with preschoolers found that children who expected a reward for drawing later chose to draw less.',
         'Klecks doesn’t judge (“great!”) but describes (“So much blue!”). That keeps curiosity alive.',
         'New chapters arrive with time – not by playing more. No streaks, no notifications, no ads, no data.',
-        'Malspaß is best together: ask your child what they painted – then keep going with real paint.',
+        'Klecksinger is best together: ask your child what they painted – then keep going with real paint.',
         'Please don’t use it to calm tantrums. It works best as a planned painting time.'
       ]
     },

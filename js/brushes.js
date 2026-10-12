@@ -1,5 +1,5 @@
 /* ============================================================
-   Malspaß — brushes
+   Klecksinger — brushes
    Every brush is a pure function of the recorded points plus a
    per-stroke seed, so a painting can be replayed exactly
    (time-lapse in the gallery, high-res export later).
