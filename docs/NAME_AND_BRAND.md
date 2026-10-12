@@ -82,7 +82,7 @@ On top of that, "Klecks" is a favourite name for children's characters and Kitas
 
 ## 5. Next steps
 
-- [ ] **Reserve the name in App Store Connect** now: create the app record with `com.appinger.klecksinger` and the German and English localizations. It's free, and the name stays reserved while the record exists. (Apple used to release unused names after 120–180 days. That rule seems to be gone, but I couldn't confirm it)
+- [x] **Reserved in App Store Connect** (12 Oct 2026): app record *Klecksinger*, Apple ID 6821960854, SKU `klecksinger`, bundle ID `com.appinger.klecksinger`, English (U.S.) and German. See [TESTFLIGHT.md](../TESTFLIGHT.md). It's free, and the name stays reserved while the record exists. (Apple used to release unused names after 120–180 days. That rule seems to be gone, but I couldn't confirm it)
 - [ ] **EUIPO SME Fund**, if you're registered as self‑employed: apply for the voucher **first**. Fees paid before approval aren't refunded. The 2026 window closes on **4 December 2026**, first come, first served. It refunds up to 75 % of trademark office fees, national filings included
 - [ ] **File "Klecksinger" at the DPMA:** word mark, classes 9 and 41, €290 online. Then watch the three‑month opposition period
 - [ ] Check social handles (@klecksinger) before announcing anything
