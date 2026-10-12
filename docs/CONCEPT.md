@@ -191,7 +191,7 @@ Rest days are optional. Grown‑ups can always wake Klecks for 10 extra minutes 
 ### Platform tools
 
 - The app works together with iOS Screen Time and Guided Access, and with Android Family Link.
-- iOS 27 introduced per‑category time allowances (Entertainment, Games, Social). Choose the App Store category honestly and never try to game it. Klecksinger's own limits are finer and friendlier.
+- iOS 27 introduced per‑category time allowances (Entertainment, Games, Social). Choose the App Store category honestly and never try to game it. Klecksinger's own limits are finer and friendlier. **Decided (October 2026): Education**, because the app teaches colors, shapes and painting tools in two languages along the early‑years art guidelines (§7).
 
 ## 7. Pedagogy
 

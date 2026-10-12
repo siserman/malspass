@@ -14,7 +14,7 @@ Created 12 October 2026 to reserve the name. Nothing has been uploaded to it yet
 | Team | `XWY4S3RCZA` (Stephan Isermann) |
 | Age rating | **4+**, saved 12 Oct 2026 (Brazil: General Audiences, Korea: ALL, Vietnam: 00+). Parental controls: yes; web, user content, social, chat, ads: no; every content question: none |
 | Kids Category | **Made for Kids, ages 5 and under.** Apple: this "cannot be changed later". Once the app is approved, it and every update must follow the Kids guidelines, unless a new app record is made. So no third‑party analytics, no ads, no RevenueCat, and links or purchases only behind the parental gate |
-| Category | not chosen yet (Education or Entertainment, [docs/STORE_PLAN.md](docs/STORE_PLAN.md)) |
+| Category | **Education** (primary, set 12 Oct 2026), no secondary. Klecksinger teaches colors, shapes and tools in two languages and follows the early‑years art guidelines ([docs/CONCEPT.md](docs/CONCEPT.md) §7) |
 
 ## Builds
 
