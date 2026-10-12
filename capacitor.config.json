@@ -1,0 +1,11 @@
+{
+  "appId": "com.appinger.klecksinger",
+  "appName": "Klecksinger",
+  "webDir": "www",
+  "backgroundColor": "#fdfbf7",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "backgroundColor": "#fdfbf7"
+  }
+}

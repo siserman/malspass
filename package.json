@@ -1,0 +1,14 @@
+{
+  "name": "klecksinger",
+  "private": true,
+  "description": "Klecksinger: the web app runs as is; this file only drives the native iOS shell (Capacitor).",
+  "scripts": {
+    "web": "sh tools/build-web.sh",
+    "sync": "sh tools/build-web.sh && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/cli": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2"
+  }
+}
