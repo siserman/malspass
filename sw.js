@@ -1,5 +1,5 @@
 /* Klecksinger service worker — cache-first so the app works fully offline */
-var CACHE = 'klecksinger-v19';
+var CACHE = 'klecksinger-v20';
 // recorded voice clips are listed in audio/clips.js (written by tools/make_voices.py)
 importScripts('audio/clips.js');
 var ASSETS = [

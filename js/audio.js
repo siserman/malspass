@@ -76,7 +76,7 @@
      ============================================================ */
   var buffers = {};   // 'de-hello' -> AudioBuffer
   var waiting = {};   // 'de-hello' -> callbacks while it loads
-  var pendingSay = null;
+  var beforeTouch = null; // a line said before a browser's first touch waits for it
   var fallbackAudio = null;
 
   // calls back with the decoded clip, or null where it can't be loaded (e.g. from file://)
@@ -103,13 +103,6 @@
     } catch (err) { done(null); }
   }
 
-  // a context still waiting for a touch isn't ready: a clip started on it would play late
-  function contextReady() {
-    if (!AC) return false;
-    if (AC.state === 'suspended') { try { AC.resume(); } catch (err) {} return false; }
-    return true;
-  }
-
   /* ---------- talking: one line at a time, mascot mouth follows ---------- */
   var current = null; // { key, onEnd, src, audio, timer }
 
@@ -117,6 +110,8 @@
     if (!tok || current !== tok) return;
     current = null;
     clearTimeout(tok.timer);
+    // a clip whose time is up never plays late (e.g. on a context that woke up after it)
+    if (tok.src) { try { tok.src.onended = null; tok.src.stop(0); } catch (err) {} }
     Mal.emit('talk', false);
     if (tok.onEnd) { var cb = tok.onEnd; tok.onEnd = null; cb(); }
   }
@@ -182,29 +177,31 @@
     }
   }
 
-  // say(key[, onEnd]) — a new line always interrupts the previous one
-  A.say = function (key, onEnd) {
-    stopCurrent();
-    var tok = { key: key, onEnd: onEnd || null, src: null, audio: null, timer: null };
-    if (!Mal.settings.voice || !textFor(key)) {
-      setTimeout(function () { if (tok.onEnd) tok.onEnd(); }, 0);
-      return;
-    }
-    current = tok;
-    if (!hasClip(Mal.lang, key)) { speakTok(tok); return; }
-    if (!contextReady()) {           // a browser before the first touch: retry after it
-      pendingSay = key;
-      speakTok(tok);
-      return;
-    }
-    var id = Mal.lang + '-' + key;
-    tok.timer = setTimeout(function () { finish(tok); }, 5000); // in case loading hangs
+  function playClip(tok) {
+    if (AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
+    var id = tok.lang + '-' + tok.key;
     loadClip(id, function (buf) {
       if (current !== tok) return;   // a newer line came first
       clearTimeout(tok.timer);
       if (buf) playBuffer(tok, buf);
       else playElement(tok, id);
     });
+  }
+
+  // say(key[, onEnd]) — a new line always interrupts the previous one
+  A.say = function (key, onEnd) {
+    stopCurrent();
+    var tok = { key: key, lang: Mal.lang, onEnd: onEnd || null, src: null, audio: null, timer: null };
+    if (!Mal.settings.voice || !textFor(key)) {
+      setTimeout(function () { if (tok.onEnd) tok.onEnd(); }, 0);
+      return;
+    }
+    current = tok;
+    if (!hasClip(Mal.lang, key)) { speakTok(tok); return; }
+    // if loading hangs, or a browser's first touch never comes, carry on without the line
+    tok.timer = setTimeout(function () { finish(tok); }, 6000);
+    if (AC) playClip(tok);
+    else beforeTouch = tok;          // the first touch creates the context, then it plays
   };
 
   // several lines in a row, e.g. ['soMuch', 'blue']
@@ -244,10 +241,9 @@
       if (s0.start) s0.start(0); else s0.noteOn(0);
     } catch (err) {}
     preloadColors();
-    if (pendingSay) {
-      var k = pendingSay; pendingSay = null;
-      setTimeout(function () { A.say(k); }, 150);
-    }
+    var tok = beforeTouch;
+    beforeTouch = null;
+    if (tok && current === tok) playClip(tok); // still the line to say: say it now, follow-up and all
   }
   document.addEventListener('touchend', unlockAudio, true);
   document.addEventListener('pointerup', unlockAudio, true);

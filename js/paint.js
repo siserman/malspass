@@ -80,7 +80,22 @@
     S = B.surface(canvas, page);
     B.clear(S);
   };
-  P.hasContent = function () { return !!page && page.strokes.length > 0; };
+  // continue a saved picture on a fresh copy: its recording is painted again (exactly, the
+  // brushes are deterministic) and new strokes are added to it. The saved picture stays as it was.
+  P.resumePage = function (chapter, item) {
+    P.newPage(chapter);
+    if (!item || !item.ev || !item.strokes || !item.strokes.length) return false;
+    page.strokes = item.strokes.slice();
+    page.ev = Array.prototype.slice.call(item.ev);
+    page.base = page.strokes.length;   // these came along: not undoable, and not new content
+    Object.keys(item.colors || {}).forEach(function (k) { page.colors[k] = item.colors[k]; });
+    (item.found || []).forEach(function (k) { page.found[k] = true; });
+    undone = true;
+    B.renderAll(S, page);
+    return true;
+  };
+  // something new on the paper (a resumed picture counts only what was added to it)
+  P.hasContent = function () { return !!page && page.strokes.length > (page.base || 0); };
   P.page = function () { return page; };
 
   /* ============================================================
@@ -233,7 +248,7 @@
   // one step back, once: the newest stroke goes away and the page is painted again from the
   // recording. Only the last stroke can be taken back; a mark before it belongs to the picture
   P.canUndo = function () {
-    return !!page && page.strokes.length > 0 && !page.full && !undone && !Object.keys(active).length;
+    return !!page && page.strokes.length > (page.base || 0) && !page.full && !undone && !Object.keys(active).length;
   };
   P.undo = function () {
     if (!P.canUndo()) return false;

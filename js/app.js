@@ -131,6 +131,7 @@
   $('fridgeBack').innerHTML = Mal.icon('back');
   $('vClose').innerHTML = Mal.icon('close');
   $('vPlay').innerHTML = Mal.icon('play');
+  $('vMore').innerHTML = Mal.icon('free');
   $('vShare').innerHTML = Mal.icon('share');
   $('vFilm').innerHTML = Mal.icon('film');
   $('vDel').innerHTML = Mal.RING + Mal.icon('trash');
@@ -268,6 +269,8 @@
     };
     var go = introGo;
     A.say(line, function () { setTimeout(function () { if (introGo === go) go(); }, 450); });
+    // another line can cut this one short (a new line always interrupts): the intro ends anyway
+    setTimeout(function () { if (introGo === go) go(); }, 12000);
   }
 
   function startChapter(ch) {
@@ -291,13 +294,16 @@
   /* ============================================================
      PAINTING
      ============================================================ */
-  function enterPaint(ch) {
+  function enterPaint(ch, resume) {
     chapter = ch;
     Mal.store.set('lastChapter', ch.id);
     if (ch.studio) fitStudioTools();
     var keys = paletteKeys(ch);
+    var lastStroke = resume ? resume.strokes[resume.strokes.length - 1] : null;
+    if (lastStroke && keys.indexOf(lastStroke.c) >= 0) P.color = Mal.color(lastStroke.c); // carry on with the color it ended with
     if (keys.length && keys.indexOf(P.color.key) < 0) P.color = Mal.color(keys.indexOf('blue') >= 0 ? 'blue' : keys[0]);
-    P.newPage(ch);
+    if (resume) P.resumePage(ch, resume);
+    else P.newPage(ch);
     buildPalette(ch);
     buildTools(ch);
     buildStudioBars();
@@ -307,6 +313,20 @@
     syncKlecksColor();
     show('paintUI');
   }
+
+  // the fridge's "keep painting": a saved picture comes back on the paper as a new copy,
+  // in its own chapter, and the saved one stays as it was. Never while Klecks sleeps.
+  Mal.app.resume = function (item) {
+    var ch = null;
+    Mal.CHAPTERS.forEach(function (c) { if (item.ch ? c.id === item.ch : c.brush === item.brush) ch = c; });
+    if (!ch || T.isSleeping || !item.ev) return false;
+    Mal.emit('input');
+    Mal.gallery.closeViewer();
+    newTools = null;
+    enterPaint(ch, item);
+    A.say('letsGo');
+    return true;
+  };
 
   // the color actually painted (Malkasten level 7 adds light and dark shades)
   function paintHex() { return chapter.studio ? Mal.shade(P.color.hex, P.shade) : P.color.hex; }

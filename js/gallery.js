@@ -184,6 +184,16 @@
     stage.style.height = Math.round(h * s + 20) + 'px';
     return { w: Math.round(w * s), h: Math.round(h * s) };
   }
+  // keep painting: needs the recording, an awake Klecks, and the orientation the picture was painted in
+  // (the recording is fractions of the screen, so the other way round it would come back stretched)
+  function canResume(full) {
+    if (!full || !full.ev || !full.strokes || !full.strokes.length || Mal.session.isSleeping) return false;
+    var a = full.w / full.h, b = window.innerWidth / window.innerHeight;
+    return Math.max(a, b) / Math.min(a, b) < 1.15;
+  }
+  function syncResume() { $('vMore').style.display = shown && canResume(shown.full) ? '' : 'none'; }
+  window.addEventListener('resize', function () { if (shown) syncResume(); });
+
   function stopReplay() {
     if (replay) { replay.stop(); replay = null; }
     vCanvas.style.display = 'none';
@@ -200,6 +210,7 @@
       vImg.src = full.img;
       viewer.classList.toggle('parent-mode', mode === 'parent');
       $('vPlay').style.display = full.ev ? '' : 'none';
+      syncResume();
       vFilm.style.display = full.ev && G.filmType() ? '' : 'none';
       $('vStar').innerHTML = Mal.icon(meta && meta.star ? 'starOn' : 'star');
       viewer.classList.add('open');
@@ -235,6 +246,13 @@
       // talking about the process is part of making art (it's in the early-years goals)
       onDone: function () { replay = null; if (viewer.classList.contains('open')) A.say('tellMe'); }
     });
+  });
+  Mal.tap($('vMore'), function () {
+    if (!shown || !canResume(shown.full) || (film && film.state === 'rec')) return;
+    stopReplay();
+    // the fridge keeps a picture in two records: what it is (chapter, colors) and how it was made
+    var m = shown.meta || {}, f = shown.full;
+    Mal.app.resume({ ch: m.ch, colors: m.colors, found: m.found, brush: f.brush, strokes: f.strokes, ev: f.ev });
   });
   Mal.tap($('vStar'), function () {
     if (!shown || !shown.meta) return;
