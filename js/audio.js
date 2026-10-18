@@ -69,28 +69,49 @@
   }
 
   /* ============================================================
-     CLIPS
+     CLIPS — decoded into Web Audio buffers and played through the
+     audio context the painting tones use. One context means one
+     unlock on the first touch and no <audio> element per clip:
+     priming 120 of those at once froze the iOS web view.
      ============================================================ */
-  var audioCache = {};
-  var audioUnlocked = false;
+  var buffers = {};   // 'de-hello' -> AudioBuffer
+  var waiting = {};   // 'de-hello' -> callbacks while it loads
   var pendingSay = null;
+  var fallbackAudio = null;
 
-  function getAudio(langCode, key) {
-    var id = langCode + '-' + key;
-    if (!audioCache[id]) {
-      var a = new Audio('audio/' + id + '.mp3');
-      a.preload = 'auto';
-      audioCache[id] = a;
+  // calls back with the decoded clip, or null where it can't be loaded (e.g. from file://)
+  function loadClip(id, cb) {
+    if (buffers[id]) { cb(buffers[id]); return; }
+    if (waiting[id]) { waiting[id].push(cb); return; }
+    waiting[id] = [cb];
+    function done(buf) {
+      if (buf) buffers[id] = buf;
+      var cbs = waiting[id] || [];
+      delete waiting[id];
+      cbs.forEach(function (f) { f(buf || null); });
     }
-    return audioCache[id];
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'audio/' + id + '.mp3', true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onload = function () {
+        if (!AC || !xhr.response || (xhr.status && xhr.status !== 200)) { done(null); return; }
+        try { AC.decodeAudioData(xhr.response, done, function () { done(null); }); } catch (err) { done(null); }
+      };
+      xhr.onerror = function () { done(null); };
+      xhr.send();
+    } catch (err) { done(null); }
   }
-  // preload every recorded clip (cached by the service worker)
-  Object.keys(RECORDED).forEach(function (l) {
-    RECORDED[l].forEach(function (k) { getAudio(l, k); });
-  });
+
+  // a context still waiting for a touch isn't ready: a clip started on it would play late
+  function contextReady() {
+    if (!AC) return false;
+    if (AC.state === 'suspended') { try { AC.resume(); } catch (err) {} return false; }
+    return true;
+  }
 
   /* ---------- talking: one line at a time, mascot mouth follows ---------- */
-  var current = null; // { key, onEnd, audio, timer }
+  var current = null; // { key, onEnd, src, audio, timer }
 
   function finish(tok) {
     if (!tok || current !== tok) return;
@@ -106,13 +127,15 @@
     current = null;
     clearTimeout(tok.timer);
     clearTimeout(tok.speakTimer);
-    if (tok.audio) { try { tok.audio.pause(); tok.audio.currentTime = 0; } catch (err) {} }
+    if (tok.src) { try { tok.src.onended = null; tok.src.stop(0); } catch (err) {} }
+    else if (tok.audio) { try { tok.audio.pause(); } catch (err) {} }
     else { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (err) {} }
     Mal.emit('talk', false);
   }
 
   function speakTok(tok) {
     var text = textFor(tok.key);
+    tok.src = null;
     tok.audio = null;
     Mal.emit('talk', true);
     // safety net: some devices never fire onend
@@ -120,35 +143,68 @@
     if (!speak(text, Mal.lang, tok)) finish(tok);
   }
 
+  function playBuffer(tok, buf) {
+    try {
+      var src = AC.createBufferSource();
+      src.buffer = buf;
+      src.connect(voiceOut);
+      src.onended = function () { finish(tok); };
+      tok.src = src;
+      Mal.emit('talk', true);
+      tok.timer = setTimeout(function () { finish(tok); }, buf.duration * 1000 + 800);
+      if (src.start) src.start(0); else src.noteOn(0);
+    } catch (err) {
+      clearTimeout(tok.timer);
+      speakTok(tok);
+    }
+  }
+
+  // where clips can't be fetched (the page opened from file://): one element, made on demand
+  function playElement(tok, id) {
+    try {
+      if (!fallbackAudio) { fallbackAudio = new Audio(); fallbackAudio.setAttribute('playsinline', ''); }
+      var a = fallbackAudio;
+      a.onended = function () { finish(tok); };
+      a.src = 'audio/' + id + '.mp3';
+      tok.audio = a;
+      Mal.emit('talk', true);
+      tok.timer = setTimeout(function () { finish(tok); }, 4500);
+      var p = a.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          if (current !== tok) return;
+          clearTimeout(tok.timer);
+          speakTok(tok);
+        });
+      }
+    } catch (err) {
+      speakTok(tok);
+    }
+  }
+
   // say(key[, onEnd]) — a new line always interrupts the previous one
   A.say = function (key, onEnd) {
     stopCurrent();
-    var tok = { key: key, onEnd: onEnd || null, audio: null, timer: null };
+    var tok = { key: key, onEnd: onEnd || null, src: null, audio: null, timer: null };
     if (!Mal.settings.voice || !textFor(key)) {
       setTimeout(function () { if (tok.onEnd) tok.onEnd(); }, 0);
       return;
     }
     current = tok;
     if (!hasClip(Mal.lang, key)) { speakTok(tok); return; }
-    try {
-      var a = getAudio(Mal.lang, key);
-      tok.audio = a;
-      a.currentTime = 0;
-      a.onended = function () { finish(tok); };
-      Mal.emit('talk', true);
-      tok.timer = setTimeout(function () { finish(tok); }, ((a.duration && isFinite(a.duration)) ? a.duration * 1000 : 3500) + 800);
-      var p = a.play();
-      if (p && p.catch) {
-        p.catch(function () {
-          if (current !== tok) return;
-          pendingSay = key;          // will retry right after unlock
-          clearTimeout(tok.timer);
-          speakTok(tok);             // and try speech in the meantime
-        });
-      }
-    } catch (err) {
+    if (!contextReady()) {           // a browser before the first touch: retry after it
+      pendingSay = key;
       speakTok(tok);
+      return;
     }
+    var id = Mal.lang + '-' + key;
+    tok.timer = setTimeout(function () { finish(tok); }, 5000); // in case loading hangs
+    loadClip(id, function (buf) {
+      if (current !== tok) return;   // a newer line came first
+      clearTimeout(tok.timer);
+      if (buf) playBuffer(tok, buf);
+      else playElement(tok, id);
+    });
   };
 
   // several lines in a row, e.g. ['soMuch', 'blue']
@@ -166,29 +222,32 @@
   A.text = textFor;
   A.hasClip = hasClip;
 
-  // iOS unlocks media playback on the first real touch — prime every clip once
+  // the color names are short and said on every tap: have them ready
+  function preloadColors() {
+    var keys = (RECORDED[Mal.lang] || []).filter(function (k) { return !!Mal.color(k); });
+    (function next() {
+      if (!keys.length) return;
+      loadClip(Mal.lang + '-' + keys.shift(), function () { setTimeout(next, 30); });
+    })();
+  }
+
+  // iOS lets a page start sound only from a touch: start (or wake) the audio context there
+  var unlocked = false;
   function unlockAudio() {
-    if (audioUnlocked) return;
-    audioUnlocked = true;
-    Object.keys(audioCache).forEach(function (id) {
-      var a = audioCache[id];
-      if (current && current.audio === a) return;
-      try {
-        a.muted = true;
-        var p = a.play();
-        if (p && p.then) {
-          p.then(function () { a.pause(); a.currentTime = 0; a.muted = false; })
-           .catch(function () { a.muted = false; });
-        } else {
-          a.pause(); a.currentTime = 0; a.muted = false;
-        }
-      } catch (err) { try { a.muted = false; } catch (e2) {} }
-    });
+    initToneEngine();
+    if (AC && AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
+    if (unlocked || !AC) return;
+    unlocked = true;
+    try {                            // older iOS also wants one sound started inside the touch
+      var b = AC.createBuffer(1, 1, 22050), s0 = AC.createBufferSource();
+      s0.buffer = b; s0.connect(AC.destination);
+      if (s0.start) s0.start(0); else s0.noteOn(0);
+    } catch (err) {}
+    preloadColors();
     if (pendingSay) {
       var k = pendingSay; pendingSay = null;
       setTimeout(function () { A.say(k); }, 150);
     }
-    initToneEngine();
   }
   document.addEventListener('touchend', unlockAudio, true);
   document.addEventListener('pointerup', unlockAudio, true);
@@ -198,7 +257,7 @@
      routed through an <audio> element so iOS treats it as media
      playback and it sounds even with the silent switch on
      ============================================================ */
-  var AC = null, toneMaster = null, toneOut = null, toneStreamAudio = null;
+  var AC = null, toneMaster = null, toneOut = null, voiceOut = null, toneStreamAudio = null;
   var tones = {}; // id -> {osc, gain, lfo, lfoGain}
   var VOICE_VOL = 0.14;
 
@@ -215,22 +274,24 @@
       comp.ratio.value = 6;
       toneMaster.connect(comp);
       toneOut = comp;
+      voiceOut = AC.createGain();    // Klecks's clips, without the tones' compressor
       var routed = false;
       try {
         var dest = AC.createMediaStreamDestination();
         comp.connect(dest);
+        voiceOut.connect(dest);
         toneStreamAudio = new Audio();
         toneStreamAudio.setAttribute('playsinline', '');
         toneStreamAudio.srcObject = dest.stream;
         var p = toneStreamAudio.play();
         if (p && p.catch) {
           p.catch(function () {
-            try { comp.connect(AC.destination); } catch (err) {}
+            try { comp.connect(AC.destination); voiceOut.connect(AC.destination); } catch (err) {}
           });
         }
         routed = true;
       } catch (err) {}
-      if (!routed) { try { comp.connect(AC.destination); } catch (err) {} }
+      if (!routed) { try { comp.connect(AC.destination); voiceOut.connect(AC.destination); } catch (err) {} }
     } catch (err) { AC = null; }
   }
 
@@ -376,4 +437,8 @@
     if (document.visibilityState !== 'visible') { A.stopAllTones(); stopCurrent(); }
     else if (AC && AC.state === 'suspended') { try { AC.resume(); } catch (err) {} }
   });
+  // in the native app sound may start without a touch, so Klecks's first line can be the recording
+  try {
+    if (window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()) { initToneEngine(); preloadColors(); }
+  } catch (err) {}
 })();

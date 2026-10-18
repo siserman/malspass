@@ -317,7 +317,7 @@ There is no single official rulebook for painting apps, but the early‑years fr
 - **All the work so far carries over:** the painting engine, the iOS audio tricks, the gallery, the session system. It stays one codebase, and the PWA remains a free test channel for families.
 - **What becomes native:**
   - **Audio session** "playback" category: tones and voice ignore the silent switch without the MediaStream workaround.
-  - Clips become Web Audio buffers: one audio context instead of 24 `<audio>` elements.
+  - Clips become Web Audio buffers: one audio context instead of an `<audio>` element per clip. **Done October 2026**, after 120 such elements, all primed on the first touch, froze the iOS web view.
   - **Files** via Capacitor Filesystem for the gallery, with device backup.
   - Share sheet and Photos, haptics, keep‑awake.
   - **StoreKit 2 / Play Billing** through a purchase plugin with on‑device verification. A single non‑consumable doesn't need a third‑party purchase backend, and every extra SDK is a Kids‑Category risk.
