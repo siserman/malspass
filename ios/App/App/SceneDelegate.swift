@@ -25,6 +25,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 /// Capacitor's web view, kept out of the way of small hands.
 class KlecksViewController: CAPBridgeViewController {
+    // the app's own native parts: the fridge as files
+    override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(KlecksFilesPlugin())
+    }
+
     // nothing over the paper
     override var prefersStatusBarHidden: Bool { true }
 

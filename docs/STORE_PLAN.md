@@ -103,7 +103,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 
 ### C. The native app (Capacitor)
 - [ ] **Capacitor 8 shell**, iOS first. It needs iOS 15 or later, so the oldest hand‑me‑down iPads (stuck on iOS 12) are out. Xcode 27 is fine
-- [ ] **Fridge storage from IndexedDB to files** (Capacitor Filesystem), with a one‑time migration. Children's drawings are the one thing that must never be lost, and WebView storage is not a safe place for them. Files are included in the iCloud device backup
+- [x] **Fridge storage from IndexedDB to files** (done 14 Nov 2026 with a small plugin of our own, not Capacitor Filesystem), with a one‑time migration. Children's drawings are the one thing that must never be lost, and WebView storage is not a safe place for them. Files are included in the iCloud device backup
 - [ ] **Audio session "playback"**, replacing the MediaStream silent‑switch trick (set in the test build, not yet verified with the switch on). The clips already play as Web Audio buffers (18 Oct 2026)
 - [ ] **Native share and save:** share sheet, Photos, and the ZIP backup (blob downloads don't work in a WebView)
 - [ ] **Film export:** test MediaRecorder inside WKWebView. If it fails, encode natively with AVAssetWriter

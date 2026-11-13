@@ -31,7 +31,7 @@ It also runs straight from `index.html` (service worker and offline cache only w
 - **Six chapters:** free painting, rainbow brush, shape stamps, magic mirror, glow night, and a color kitchen where pigments really mix. They unlock with calendar days, not play time.
 - **The Malkasten (paint box):** free painting itself grows in seven levels, one new tool at a time: six colors → all colors → thick & thin → eraser → crayon, watercolor and marker → paint bucket & undo → light & dark shades. The start and the last level depend on the child's age, a new level comes every few days, and Klecks introduces each one. Parents can set the level directly.
 - **Sessions:** a sun clock, a sleepy "one last picture", a goodnight ritual and a sleep screen with an offline idea. Also a break between sessions, a daily maximum, bedtime and rest days.
-- **The fridge:** every picture is saved automatically (IndexedDB, on the device only) and can be replayed as an exact time‑lapse. **Weitermalen** (the brush in the viewer) puts a picture back on the paper to keep painting; the new picture is a copy, and the old one stays as it was. Parents can mark favorites, save/share and delete, save a picture's time‑lapse as a **film** (MP4 in Safari, made with MediaRecorder), and back up the whole fridge as **one ZIP file** (pictures plus recordings) that *Sicherung laden* restores.
+- **The fridge:** every picture is saved automatically (on the device only: IndexedDB in a browser, files in the native app) and can be replayed as an exact time‑lapse. **Weitermalen** (the brush in the viewer) puts a picture back on the paper to keep painting; the new picture is a copy, and the old one stays as it was. Parents can mark favorites, save/share and delete, save a picture's time‑lapse as a **film** (MP4 in Safari, made with MediaRecorder), and back up the whole fridge as **one ZIP file** (pictures plus recordings) that *Sicherung laden* restores.
 - **Sound:** spoken colors (recorded clips, device voice as fallback) and a pentatonic tone per finger that plays even with the iPhone's silent switch on.
 
 ## Code
@@ -63,7 +63,7 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
 xcrun devicectl device install app --device <name or UDID> build/device/Build/Products/Release-iphoneos/App.app
 ```
 
-This is a test build, not the store app: there's no purchase yet, the fridge still lives in the web view's storage rather than in files, and test mode (`Mal.DEV`) is on. A build for TestFlight comes from `tools/release.sh`, which switches test mode off ([TESTFLIGHT.md](TESTFLIGHT.md)). What's left for the store is in [docs/RELEASE_PLAN.md](docs/RELEASE_PLAN.md).
+This is a test build, not the store app: there's no purchase yet, saving, sharing and the backup still use browser downloads, and test mode (`Mal.DEV`) is on. A build for TestFlight comes from `tools/release.sh`, which switches test mode off ([TESTFLIGHT.md](TESTFLIGHT.md)). What's left for the store is in [docs/RELEASE_PLAN.md](docs/RELEASE_PLAN.md).
 
 ## Voice
 

@@ -1,9 +1,9 @@
 /* ============================================================
    Klecksinger — the fridge (gallery)
-   Every picture is kept on this device only (IndexedDB):
-   a small 'meta' record with the thumbnail for the fridge door,
-   and a 'full' record with the image and the stroke recording
-   for the time-lapse replay. Kids can look and replay; saving,
+   Every picture is kept on this device only (IndexedDB in a
+   browser, files in the native app): a small 'meta' record with
+   the thumbnail for the fridge door, and a 'full' record with the
+   image and the stroke recording for the time-lapse replay. Kids can look and replay; saving,
    sharing and deleting is for grown-ups.
    ============================================================ */
 (function () {
@@ -57,75 +57,180 @@
   }
   function values(obj) { return Object.keys(obj).map(function (k) { return obj[k]; }); }
 
+  /* ---------- where pictures are kept ----------
+     In a browser: IndexedDB. In the native app: files, written by the
+     KlecksFiles plugin (ios/App/App/KlecksFiles.swift). Both answer the
+     same six questions, so the rest of the fridge doesn't care which. */
+  var idb = {
+    list: function () {
+      return db().then(function (d) {
+        if (!d) return values(mem.meta);
+        return asPromise(d.transaction('meta').objectStore('meta').getAll());
+      });
+    },
+    get: function (id) {
+      return db().then(function (d) {
+        if (!d) return mem.full[id];
+        return asPromise(d.transaction('full').objectStore('full').get(id));
+      });
+    },
+    put: function (meta, full) {
+      return write(['meta', 'full'], function (tx) {
+        if (!tx) { mem.meta[meta.id] = meta; mem.full[full.id] = full; return; }
+        tx.objectStore('meta').put(meta);
+        tx.objectStore('full').put(full);
+      });
+    },
+    setMeta: function (meta) {
+      return write(['meta'], function (tx) { if (tx) tx.objectStore('meta').put(meta); });
+    },
+    remove: function (id) {
+      return write(['meta', 'full'], function (tx) {
+        if (!tx) { delete mem.meta[id]; delete mem.full[id]; return; }
+        tx.objectStore('meta').delete(id);
+        tx.objectStore('full').delete(id);
+      });
+    },
+    clear: function () {
+      return write(['meta', 'full'], function (tx) {
+        if (!tx) { mem.meta = {}; mem.full = {}; return; }
+        tx.objectStore('meta').clear();
+        tx.objectStore('full').clear();
+      });
+    }
+  };
+
+  var cap = window.Capacitor;
+  var NATIVE = !!(cap && cap.isNativePlatform && cap.isNativePlatform() && cap.nativePromise);
+  var filesDir = '';
+  function nat(method, opts) { return cap.nativePromise('KlecksFiles', method, opts || {}); }
+  function b64of(url) { return /^data:/.test(url || '') ? url.slice(url.indexOf(',') + 1) : ''; }
+  // the small record, without the thumbnail: that is a file of its own
+  function record(m) {
+    return JSON.stringify({ id: m.id, t: m.t, ch: m.ch, star: !!m.star, colors: m.colors || {}, found: m.found || [] });
+  }
+  var files = {
+    list: function () {
+      return nat('list').then(function (r) {
+        filesDir = r.dir;
+        var out = [];
+        (r.items || []).forEach(function (str) {
+          try {
+            var m = JSON.parse(str);
+            if (!m || !m.id) return;
+            m.thumb = cap.convertFileSrc(filesDir + '/' + m.id + '.thumb.jpg');
+            out.push(m);
+          } catch (err) {}
+        });
+        return out;
+      });
+    },
+    get: function (id) {
+      return nat('read', { id: String(id) }).then(function (r) {
+        var d = {};
+        try { if (r.rec) d = JSON.parse(r.rec); } catch (err) {}
+        return { id: id, img: 'data:image/jpeg;base64,' + r.img, ev: d.ev ? evFromB64(d.ev) : null, strokes: d.strokes || [],
+                 brush: d.brush, bg: d.bg, w: d.w, h: d.h, gw: d.gw || 0, gh: d.gh || 0 };
+      }, function () { return undefined; });
+    },
+    put: function (meta, full) {
+      var rec = { brush: full.brush, bg: full.bg, w: full.w, h: full.h, gw: full.gw || 0, gh: full.gh || 0,
+                  strokes: full.strokes || [], ev: full.ev ? evToB64(full.ev) : null };
+      return nat('write', { id: String(meta.id), meta: record(meta), rec: JSON.stringify(rec),
+                            img: b64of(full.img), thumb: b64of(meta.thumb) });
+    },
+    setMeta: function (meta) { return nat('setMeta', { id: String(meta.id), meta: record(meta) }); },
+    remove: function (id) { return nat('remove', { id: String(id) }); },
+    // the copies left in the web view from before the move go too
+    clear: function () { return nat('clear').then(function () { return idb.clear().catch(function () {}); }); }
+  };
+  var store = NATIVE ? files : idb;
+
+  /* Pictures painted before the app kept files are copied over once.
+     The old copies stay where they are: nothing is deleted here. */
+  var moved = null;
+  function moveToFiles() {
+    if (!NATIVE || Mal.store.get('filesMoved', 0)) return Promise.resolve();
+    return Promise.all([idb.list(), files.list()]).then(function (r) {
+      var have = {}, failed = 0;
+      r[1].forEach(function (m) { have[m.id] = true; });
+      var todo = r[0].filter(function (m) { return !have[m.id]; });
+      function next() {
+        if (!todo.length) return null;
+        var m = todo.shift();
+        return idb.get(m.id).then(function (full) {
+          return full && full.img ? files.put(m, full) : null;
+        }).catch(function () { failed++; }).then(next);
+      }
+      return Promise.resolve(next()).then(function () {
+        if (!failed) Mal.store.set('filesMoved', Date.now()); // otherwise: try again at the next start
+      });
+    }).catch(function () {});
+  }
+
   // fridge list, newest first (small records, cached)
   G.list = function () {
     if (metas) return Promise.resolve(metas);
-    return db().then(function (d) {
-      if (!d) return values(mem.meta);
-      return asPromise(d.transaction('meta').objectStore('meta').getAll());
-    }).then(function (arr) {
+    moved = moved || moveToFiles();
+    return moved.then(function () { return store.list(); }).then(function (arr) {
       metas = (arr || []).sort(function (a, b) { return b.id - a.id; });
       return metas;
     });
   };
-  G.get = function (id) {
-    return db().then(function (d) {
-      if (!d) return mem.full[id];
-      return asPromise(d.transaction('full').objectStore('full').get(id));
-    });
-  };
+  // the move shouldn't wait for someone to open the fridge (Klecks may be asleep at the first start)
+  if (NATIVE) setTimeout(function () { G.list().catch(function () {}); }, 0);
+  G.get = function (id) { return store.get(id); };
   G.add = function (item) {
     var meta = { id: item.id, t: item.t, ch: item.ch, thumb: item.thumb, star: false, colors: item.colors, found: item.found };
     var full = { id: item.id, img: item.img, ev: item.ev, strokes: item.strokes, brush: item.brush, bg: item.bg,
                  w: item.w, h: item.h, gw: item.gw, gh: item.gh };
     return G.list().then(function (list) {
       list.unshift(meta);
-      return write(['meta', 'full'], function (tx) {
-        if (!tx) { mem.meta[meta.id] = meta; mem.full[full.id] = full; return; }
-        tx.objectStore('meta').put(meta);
-        tx.objectStore('full').put(full);
-      }).catch(function () {
+      return store.put(meta, full).catch(function () {
         // storage trouble: keep the picture without its replay data
         full.ev = null;
-        return write(['meta', 'full'], function (tx) {
-          if (!tx) return;
-          tx.objectStore('meta').put(meta);
-          tx.objectStore('full').put(full);
-        });
+        return store.put(meta, full);
       });
     }).then(prune).then(function () { Mal.emit('gallery'); return meta; });
   };
   G.remove = function (id) {
     if (metas) metas = metas.filter(function (m) { return m.id !== id; });
-    return write(['meta', 'full'], function (tx) {
-      if (!tx) { delete mem.meta[id]; delete mem.full[id]; return; }
-      tx.objectStore('meta').delete(id);
-      tx.objectStore('full').delete(id);
-    }).then(function () { Mal.emit('gallery'); });
+    return store.remove(id).then(function () { Mal.emit('gallery'); });
   };
   G.setStar = function (id, on) {
     var m = null;
     (metas || []).forEach(function (x) { if (x.id === id) m = x; });
     if (!m) return Promise.resolve();
     m.star = !!on;
-    return write(['meta'], function (tx) { if (tx) tx.objectStore('meta').put(m); });
+    return store.setMeta(m);
   };
   G.clearAll = function () {
     metas = [];
-    return write(['meta', 'full'], function (tx) {
-      if (!tx) { mem.meta = {}; mem.full = {}; return; }
-      tx.objectStore('meta').clear();
-      tx.objectStore('full').clear();
-    }).then(function () { Mal.emit('gallery'); });
+    return store.clear().then(function () { Mal.emit('gallery'); });
   };
-  // keep the newest pictures (and every favorite)
+  /* In a browser the newest pictures (and every favorite) are kept, because
+     website storage is small and the browser may clear all of it when it
+     fills up. The native app keeps every picture: only a parent deletes. */
   function prune() {
+    if (NATIVE) return Promise.resolve();
     return G.list().then(function (list) {
       var excess = list.length - MAX_ITEMS;
       if (excess <= 0) return;
       var victims = list.filter(function (m) { return !m.star; }).slice(-excess);
       return Promise.all(victims.map(function (m) { return G.remove(m.id); }));
     });
+  }
+  // the thumbnail as data, wherever it is kept (for the backup)
+  function thumbData(m) {
+    if (/^data:/.test(m.thumb || '')) return Promise.resolve(m.thumb);
+    return fetch(m.thumb).then(function (r) { return r.blob(); }).then(function (blob) {
+      return new Promise(function (resolve) {
+        var fr = new FileReader();
+        fr.onload = function () { resolve(fr.result); };
+        fr.onerror = function () { resolve(''); };
+        fr.readAsDataURL(blob);
+      });
+    }).catch(function () { return ''; });
   }
 
   /* ============================================================
@@ -516,12 +621,13 @@
           return { blob: zip.blob(), name: 'klecksinger-' + Mal.dayKey() + '.zip', count: index.length };
         }
         var m = todo[i++];
-        return G.get(m.id).then(function (full) {
+        return Promise.all([G.get(m.id), thumbData(m)]).then(function (r) {
+          var full = r[0];
           if (full && full.img) {
             var name = stamp(m.id);
             while (used[name]) name += '-' + (m.id % 1000);
             used[name] = true;
-            var data = { id: m.id, t: m.t, ch: m.ch, star: !!m.star, colors: m.colors || {}, found: m.found || [], thumb: m.thumb,
+            var data = { id: m.id, t: m.t, ch: m.ch, star: !!m.star, colors: m.colors || {}, found: m.found || [], thumb: r[1],
                          brush: full.brush, bg: full.bg, w: full.w, h: full.h, gw: full.gw || 0, gh: full.gh || 0,
                          strokes: full.strokes || [], ev: full.ev ? evToB64(full.ev) : null };
             zip.add(name + '.jpg', dataURLtoBytes(full.img), m.id);
@@ -586,13 +692,7 @@
       });
     });
   }
-  function put(meta, full) {
-    return write(['meta', 'full'], function (tx) {
-      if (!tx) { mem.meta[meta.id] = meta; mem.full[full.id] = full; return; }
-      tx.objectStore('meta').put(meta);
-      tx.objectStore('full').put(full);
-    });
-  }
+  function put(meta, full) { return store.put(meta, full); }
   // adds the pictures this device doesn't have yet → Promise of { added, skipped }
   G.restore = function (file, onProgress) {
     var dec = new TextDecoder();
