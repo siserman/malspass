@@ -1,6 +1,6 @@
 # Klecksinger → App Store: what it takes, the competition, and the price
 
-*12 October 2026 · builds on [CONCEPT.md](CONCEPT.md) §10–13 · prices are App Store listings as found today*
+*12 October 2026 · the order of work since 13 November is in [RELEASE_PLAN.md](RELEASE_PLAN.md) · builds on [CONCEPT.md](CONCEPT.md) §10–13 · prices are App Store listings as found today*
 
 ---
 
@@ -89,7 +89,7 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 ## 4. What it takes — the checklist
 
 ### A. Account and legal (blockers)
-- [ ] **DSA trader verification** (the name document): without it, no sales in Germany or Austria. It's account‑wide and already gates babinger
+- [x] **DSA trader details** (the name document): updated 14 Nov 2026. Without Apple's verification, no sales in Germany or Austria. It's account‑wide
 - [x] **Voice licences:** the Piper clips (built on non‑commercial data) are gone, replaced 12 Oct 2026. Every clip, the German colors included, was re-recorded on the paid plan
 - [x] **All 60 lines recorded in both languages** (12 Oct 2026, ElevenLabs *Laura*), replacing the Piper clips. They were made on a **paid** plan (confirmed), so ElevenLabs licenses them for commercial use; keep the invoice. A voice actor remains an option for the final Klecks
 - [ ] **Name: Klecksinger** (see [NAME_AND_BRAND.md](NAME_AND_BRAND.md)). "Malspaß" is too generic to protect, and "Klecks" alone is taken in our classes (sigikid for toys, a childcare provider for education, "Kleo & Klecks" for software). "Klecksinger" turns up nowhere: no app, no trademark, no domain. Reserve it in App Store Connect and file it at the DPMA
@@ -108,9 +108,9 @@ The concept's line (chapters 1–3 plus the whole Malkasten free) gives away the
 - [ ] **Native share and save:** share sheet, Photos, and the ZIP backup (blob downloads don't work in a WebView)
 - [ ] **Film export:** test MediaRecorder inside WKWebView. If it fails, encode natively with AVAssetWriter
 - [ ] **StoreKit 2 non‑consumable** through a small plugin, **without RevenueCat**. Purchase and *Restore* sit only behind the parental gate, and Family Sharing is on. (Turning Family Sharing on for a product can't be undone)
-- [ ] **`Mal.DEV = false`** in store builds, set by the build rather than by hand
+- [x] **`Mal.DEV = false`** in store builds, set by the build rather than by hand (`tools/build-web.sh release`, 14 Nov 2026)
 - [ ] **App icon at 1024 px and a launch screen** (today's icons are 512 px PWA icons)
-- [ ] **A release script** like the Flutter apps' `tool/release.sh`: `npx cap sync ios`, then xcodebuild archive and the altool upload with the same API key. The testflight‑release skill covers Flutter only
+- [x] **A release script:** `tools/release.sh` (14 Nov 2026), like the Flutter apps' `tool/release.sh`: sync with test mode off, archive, export, and the altool upload with the same API key
 - [ ] **Test devices:** an old iPad on iOS 15, a current iPad and an iPhone, all in airplane mode
 
 ### D. Store listing and review

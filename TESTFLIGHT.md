@@ -18,16 +18,17 @@ Created 12 October 2026 to reserve the name. Nothing has been uploaded to it yet
 
 ## Builds
 
-So far only development builds, installed straight onto the own iPhone and iPad (README, "Native iOS app"). This is not a Flutter app, so the portfolio's `tool/release.sh` doesn't apply. A TestFlight upload needs an archive with distribution signing:
+So far only development builds, installed straight onto the own iPhone and iPad (README, "Native iOS app"), and one dry run of the release script.
 
 ```sh
-npm run sync
-xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
-  -destination 'generic/platform=iOS' -archivePath build/Klecksinger.xcarchive -allowProvisioningUpdates archive
-# then export for App Store Connect and upload with altool, using the account-wide API key
+tools/release.sh             # build a store-signed IPA in build/release/ipa
+tools/release.sh --upload    # the same, then validate and upload to App Store Connect
+tools/release.sh --no-bump   # reuse the current build number
 ```
 
-Before the first upload: bump `CURRENT_PROJECT_VERSION`, turn test mode off (`Mal.DEV` in `js/core.js`), and check that the icon has no alpha channel (it doesn't today).
+The script bumps the build number, copies the web app with **test mode off** (`tools/build-web.sh release` changes the copy, never the source), syncs, archives and exports. It stops if test mode is still on in the bundled app or the icon has an alpha channel, and afterwards it puts the working copy back to the own‑device state. It needs `ASC_KEY_ID` and `ASC_ISSUER_ID` in the environment and the Capacitor packages already fetched in `build/sim/SourcePackages` (a simulator build does that).
+
+Dry run on 14 November 2026: 1.0 (1), 2.5 MB, signed *Apple Distribution*, not uploaded.
 
 | Build | Uploaded | Notes |
 |---|---|---|

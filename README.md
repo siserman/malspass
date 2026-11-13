@@ -2,7 +2,7 @@
 
 *Formerly Malspaß.* A calm finger‑painting app for young children, in German and English, with **Klecks**, a little drop of paint who paints with the child and ends each session with a goodnight ritual.
 
-The goal is a paid iOS/Android app. The concept — mascot, chapters, pedagogy, healthy‑use design, business model, tech path and roadmap — is in **[docs/CONCEPT.md](docs/CONCEPT.md)**. Everything Klecks says, ready for recording, is in [docs/VOICE_SCRIPT.md](docs/VOICE_SCRIPT.md). What it takes to reach the App Store, the competition and the price decision are in [docs/STORE_PLAN.md](docs/STORE_PLAN.md); the name and branding are in [docs/NAME_AND_BRAND.md](docs/NAME_AND_BRAND.md).
+The goal is a paid iOS/Android app. The concept — mascot, chapters, pedagogy, healthy‑use design, business model, tech path and roadmap — is in **[docs/CONCEPT.md](docs/CONCEPT.md)**. Everything Klecks says, ready for recording, is in [docs/VOICE_SCRIPT.md](docs/VOICE_SCRIPT.md). What it takes to reach the App Store, the competition and the price decision are in [docs/STORE_PLAN.md](docs/STORE_PLAN.md), and the order of work is in [docs/RELEASE_PLAN.md](docs/RELEASE_PLAN.md); the name and branding are in [docs/NAME_AND_BRAND.md](docs/NAME_AND_BRAND.md).
 
 ## Try it
 
@@ -63,7 +63,7 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
 xcrun devicectl device install app --device <name or UDID> build/device/Build/Products/Release-iphoneos/App.app
 ```
 
-This is a test build, not the store app: there's no purchase yet, the fridge still lives in the web view's storage rather than in files, and test mode (`Mal.DEV`) is still on. The store work is in [docs/STORE_PLAN.md](docs/STORE_PLAN.md), section C.
+This is a test build, not the store app: there's no purchase yet, the fridge still lives in the web view's storage rather than in files, and test mode (`Mal.DEV`) is on. A build for TestFlight comes from `tools/release.sh`, which switches test mode off ([TESTFLIGHT.md](TESTFLIGHT.md)). What's left for the store is in [docs/RELEASE_PLAN.md](docs/RELEASE_PLAN.md).
 
 ## Voice
 
